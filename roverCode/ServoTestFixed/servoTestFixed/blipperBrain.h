@@ -3,11 +3,11 @@
 #define BLIPPER_BRAIN_H
 
 
-#define TRIG_PIN 0
-#define ECHO_PIN 1
+#define TRIG_PIN 7
+#define ECHO_PIN 8
 #define BLIPPER_SERVO_PIN 9 
 #define NUM_READINGS 90
-#define SERVO_DEGREES_PER_SEC 100
+#define SERVO_DEGREES_PER_SEC 150
 
 #include <Servo.h>
 #include <Arduino.h>
@@ -21,14 +21,14 @@ public:
   ~blipperBrain();
 
   
-  float getUltrasonicRead();
+  int getUltrasonicRead();
 
   int getPoleAngle();
 
 
 private:
   Servo* mainServo;
-  float posReadings[NUM_READINGS];
+  int posReadings[NUM_READINGS];
   int delayPerReading;
   int servoPos;
 

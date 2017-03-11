@@ -1,6 +1,7 @@
 
 #include <Servo.h>
 #include "blipperBrain.h"
+#include "testingAlgs2.h"
 
 
 #define LEFT_MOTOR_PIN 10
@@ -64,10 +65,10 @@ if (Serial.available() > 0) {
 
 void loop() {
 
+  //testingAlgorithms mainTest;
+  //mainTest.testFilterArray(blipper);
 
-  Serial.println(blipper->getUltrasonicRead());
-
-  
+  +Serial.println(blipper->getUltrasonicRead());
 
 
 }

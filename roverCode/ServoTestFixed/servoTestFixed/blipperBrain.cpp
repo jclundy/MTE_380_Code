@@ -9,6 +9,8 @@ blipperBrain::blipperBrain(Servo* inputServo)
   pinMode(TRIG_PIN,OUTPUT);
   pinMode(ECHO_PIN,INPUT);
 
+  servoPos = mainServo->read();
+
   
 }
 
@@ -19,9 +21,19 @@ blipperBrain::~blipperBrain()
 
 void blipperBrain::rotateServo(int pos) {
 
-  int rotateDelay = abs(pos-servoPos) * 1000 / SERVO_DEGREES_PER_SEC + 5;
+  
+  Serial.print("servoPos ");
+  Serial.print(servoPos);
+  Serial.print("pos: ");
+  Serial.print(pos);
+  
+  unsigned int rotateDelay = abs(pos-servoPos) * 1000 / SERVO_DEGREES_PER_SEC + 5;
+  Serial.print("RD: ");
+  Serial.println(rotateDelay);
+
   
   mainServo->write(pos);
+
   
   delay(rotateDelay);
   servoPos = pos;
@@ -30,23 +42,27 @@ void blipperBrain::rotateServo(int pos) {
 void blipperBrain::populatePositionArray() {
 
   if (servoPos != 0) {
-    rotateServo(0);
+    mainServo->write(0);
+    delay(1000);
   }
 
   int degreePerReading = 180 / NUM_READINGS;
 
+
   for (int i = 0; i < NUM_READINGS; i ++) {
-    rotateServo(i*degreePerReading);
+    mainServo->write(i*degreePerReading);
+    delay(30);
+    
     posReadings[i] = getUltrasonicRead();
   }
 }
 
 int blipperBrain::filterPositionArray() {
 
-  float verticalTol = 10;
-  int lengthTol = 5;
+  int verticalTol = 3;
+  int lengthTol = 8;
 
-  int* polePoints = new int[NUM_READINGS/lengthTol];
+  int* polePoints = new int[NUM_READINGS];
   int polePointsSize = 0;
 
   int desiredAngle = 90;
@@ -60,7 +76,7 @@ int blipperBrain::filterPositionArray() {
     isInTolerance = true;
     
     for (int j = 1; j < lengthTol; j++) {
-      if (abs(posReadings[j]-posReadings[i]) > verticalTol) {
+      if (abs(posReadings[j+i]-posReadings[i]) > verticalTol) {
         isInTolerance = false;
       }
     }
@@ -74,6 +90,12 @@ int blipperBrain::filterPositionArray() {
 
   int bestGuessIndex = 0;
   int bestGuessValue = 180;
+
+  Serial.println("PolePoints array");
+
+  for (int i = 0; i < polePointsSize; i++) {
+    Serial.println(polePoints[i]);
+  }
   
   for (int i = 0; i < polePointsSize; i++) {
 
@@ -84,9 +106,11 @@ int blipperBrain::filterPositionArray() {
   }
 
   
-  
+  bestGuessValue = polePoints[bestGuessIndex];
 
   delete polePoints;
+
+  Serial.println("BestGuessValue:");
 
   return bestGuessValue;
   
@@ -100,13 +124,13 @@ int blipperBrain::getPoleAngle() {
   
 }
 
-float blipperBrain::getUltrasonicRead() {
+int blipperBrain::getUltrasonicRead() {
 
   unsigned long t1;
   unsigned long t2;
   unsigned long pulseTimer;
   unsigned long pulse_width;
-  float cm;
+  int cm;
 
   digitalWrite(TRIG_PIN, HIGH);
   delayMicroseconds(10);
