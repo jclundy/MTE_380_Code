@@ -17,9 +17,8 @@ drivingBrain::~drivingBrain()
 
 void drivingBrain::driveForwards(int power) {
 
-  int speedVal = 1500 + power * (2000 - 1500) / 100.0;
 
-  leftServo->writeMicroseconds(speedVal);
-  rightServo->writeMicroseconds(speedVal);
+  leftServo->writeMicroseconds(1000);
+  rightServo->writeMicroseconds(2000);
 }
 
