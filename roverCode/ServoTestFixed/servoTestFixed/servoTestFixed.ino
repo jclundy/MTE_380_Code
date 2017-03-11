@@ -68,7 +68,7 @@ void loop() {
   //testingAlgorithms mainTest;
   //mainTest.testFilterArray(blipper);
 
-  +Serial.println(blipper->getUltrasonicRead());
+  Serial.println(blipper->getUltrasonicRead());
 
 
 }
