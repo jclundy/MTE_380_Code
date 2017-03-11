@@ -2,6 +2,7 @@
 #include <Servo.h>
 #include "blipperBrain.h"
 #include "testingAlgs2.h"
+#include "drivingBrain.h"
 
 
 #define LEFT_MOTOR_PIN 10
@@ -12,6 +13,7 @@ Servo servoL;
 Servo servoR;
 Servo servoBlipper; 
 blipperBrain* blipper;
+drivingBrain* wheelDriver;
 
 
 
@@ -41,8 +43,11 @@ void setup() {
   servoBlipper.attach(BLIPPER_SERVO_PIN); 
 
   Servo* servoSensor_p = (&servoBlipper);
+  Servo* servoL_p = (&servoL);
+  Servo* servoR_p = (&servoR);
   
   blipper = new blipperBrain(servoSensor_p);
+  wheelDriver = new drivingBrain(servoL_p, servoR_p);
   Serial.println("Initalized");
 
 }
@@ -68,7 +73,11 @@ void loop() {
   //testingAlgorithms mainTest;
   //mainTest.testFilterArray(blipper);
 
-  Serial.println(blipper->getUltrasonicRead());
+  //Serial.println(blipper->getUltrasonicRead());
+
+  wheelDriver->driveForwards(100);
+
+  
 
 
 }
