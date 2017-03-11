@@ -60,11 +60,11 @@ int incomingValue;
 if (Serial.available() > 0) {
     incomingValue = Serial.parseInt();
     Serial.println(incomingValue);
-    servoL.writeMicroseconds(incomingValue);
     servoR.writeMicroseconds(incomingValue);
+    //servoR.writeMicroseconds(incomingValue);
   }
 
-  blinkWait(200,100);
+  //blinkWait(200,100);
   
 }
 
@@ -75,7 +75,7 @@ void loop() {
 
   //Serial.println(blipper->getUltrasonicRead());
 
-  wheelDriver->driveForwards(100);
+  getSerialInput();
 
   
 
