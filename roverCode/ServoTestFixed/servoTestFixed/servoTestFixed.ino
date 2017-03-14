@@ -38,6 +38,12 @@ void loop() {
 
 
   testingAlgorithms* mainTest = new testingAlgorithms();
-  mainTest->rightServoTestMicroseconds(wheelDriver);
+  //mainTest->testDrivingTrim(wheelDriver);
+  //mainTest->getBlipperDriveByArray(blipper, wheelDriver);
+  //mainTest->getBlipperRotateArray(blipper, wheelDriver);
+  //mainTest->testDriveByPole(blipper, wheelDriver);
+  //mainTest->testDriveToPole(blipper, wheelDriver);
+  //mainTest->testBlipperFindPolePosition(blipper, wheelDriver);
+  mainTest->testLocatePoleHeadOn(blipper, wheelDriver);
 
 }

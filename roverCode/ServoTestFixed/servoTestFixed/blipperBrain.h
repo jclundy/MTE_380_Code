@@ -20,21 +20,24 @@ public:
   blipperBrain(Servo* inputServo);
   ~blipperBrain();
 
+  double lastReadingValue;
   
-  int getUltrasonicRead();
+  
+  void rotateServo(int pos);
+  
+  double getUltrasonicRead();
 
-  int getPoleAngle();
+  double waitToSeePole();
+  bool driveTowardsPole();
+  
 
+  int findPolePosition();
 
 private:
   Servo* mainServo;
-  int posReadings[NUM_READINGS];
-  int delayPerReading;
-  int servoPos;
+  
 
-  void populatePositionArray();
-  void rotateServo(int pos);
-  int filterPositionArray();
+  
   
 };
 

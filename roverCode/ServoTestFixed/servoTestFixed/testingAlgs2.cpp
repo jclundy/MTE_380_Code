@@ -11,25 +11,6 @@ testingAlgorithms::~testingAlgorithms() {
   
 }
 
-void testingAlgorithms::testPopulationArray(blipperBrain* blipper) {
-
-  blipper->populatePositionArray();
-
-  for (int i = 0; i < NUM_READINGS; i++) {
-    Serial.println(blipper->posReadings[i]);
-  }
-  
-}
-
-void testingAlgorithms::testFilterArray(blipperBrain* blipper) {
-
-  Serial.println("Starting test");
-  testPopulationArray(blipper);
-
-  Serial.println("Best guess value:");
-  Serial.println(blipper->filterPositionArray());
-  
-}
 
 void testingAlgorithms::testDrivingTrim(drivingBrain* wheelDriver) {
 
@@ -114,6 +95,248 @@ if (Serial.available() > 0) {
     Serial.println(incomingValue);
     wheelDriver->rightServo->writeMicroseconds(incomingValue);
   }
+  
+}
+
+void testingAlgorithms::testDriveByPole(blipperBrain* blipper, drivingBrain* wheelDriver) {
+
+  double returnValue;
+
+   Serial.println("Type S to start to start driving by pole");
+   while (Serial.available() <= 0);
+   Serial.read();
+  
+  Serial.println("Starting Test");
+  
+  blipper->rotateServo(175);
+  
+  delay(500);
+  
+  wheelDriver->driveForwards(90);
+  
+  returnValue = blipper->waitToSeePole();
+  
+  Serial.print("Pole Found: ");
+  
+  Serial.println(returnValue,100);
+  
+  wheelDriver->rotateDegrees(90);
+  
+  blipper->rotateServo(90);
+  
+  delay(500);
+  
+  Serial.print("Evaluated Pole Distance: ");
+  
+  double difference = blipper->getUltrasonicRead();
+  
+  Serial.println(difference, 100);
+
+  Serial.print("Difference: ");
+
+  difference = abs(difference - returnValue);
+
+  Serial.println(difference,100);
+
+
+
+    
+}
+ 
+  
+  
+void testingAlgorithms::getBlipperDriveByArray(blipperBrain* blipper, drivingBrain* wheelDriver) {
+
+  int delayAmount;
+
+  Serial.println("Type reading numbers to start");
+  while (Serial.available() <= 0);
+  delayAmount = Serial.parseInt();
+
+  blipper->rotateServo(90);
+  
+  delay(500);
+  
+  wheelDriver->driveForwards(90);
+
+  while(delayAmount > 0) {
+    Serial.println(blipper->getUltrasonicRead(),10);
+    delayAmount--;
+  }
+
+  wheelDriver->driveStop();
+
+  
+}
+
+void testingAlgorithms::getBlipperRotateArray(blipperBrain* blipper, drivingBrain* wheelDriver) {
+
+  int delayAmount;
+
+  Serial.println("Type reading numbers to start");
+  while (Serial.available() <= 0);
+  delayAmount = Serial.parseInt();
+
+  blipper->rotateServo(90);
+
+  delay(500);
+  
+  for (int i = 0; i < delayAmount; i++) {
+    blipper->rotateServo(130-i);
+    Serial.println(blipper->getUltrasonicRead(),10);
+    delay(20);
+  }
+
+  blipper->rotateServo(90);
+
+  
+}
+
+void testingAlgorithms::testDriveToPole(blipperBrain* blipper, drivingBrain* wheelDriver) {
+
+  bool returnValue;
+
+   Serial.println("Type S to start driving to pole");
+   while (Serial.available() <= 0);
+   Serial.read();
+  
+  Serial.println("Starting Test");
+  
+  blipper->rotateServo(90);
+  
+  delay(500);
+  
+  wheelDriver->driveForwards(90);
+
+  returnValue = blipper->driveTowardsPole();
+
+  wheelDriver->driveStop();
+
+  if (returnValue) {
+    Serial.print("Found pole at distance: ");
+    Serial.println(blipper->lastReadingValue,100);
+  } else {
+    Serial.print("Lost Pole at distance: ");
+    Serial.println(blipper->lastReadingValue,100);
+    delay(100);
+    
+  } 
+}
+
+
+
+void testingAlgorithms::testBlipperFindPolePosition(blipperBrain* blipper, drivingBrain* wheelDriver) {
+
+  int returnValue;
+
+  unsigned int inputValue;
+  double inputDistance;
+
+   Serial.print("Initial Distance: ");
+   Serial.println(blipper->getUltrasonicRead(),10);
+   
+   Serial.println("Type in pole distance to search * 100");
+   while (Serial.available() <= 0);
+   inputValue = Serial.parseInt();
+   inputDistance = inputValue / 100.0;
+
+   Serial.println(inputDistance,10);
+  
+  Serial.println("Starting Test");
+
+  blipper->rotateServo(90);
+  blipper->lastReadingValue = inputDistance;
+  
+  
+
+  returnValue = blipper->findPolePosition();
+
+  Serial.print("Pole found at: ");
+  Serial.println(returnValue);
+
+  blipper->rotateServo(90);
+  delay(100);
+
+  if (returnValue != -1) {
+    wheelDriver->rotateDegrees(returnValue - 90);
+  
+    delay(1000);
+  
+    returnValue = blipper->findPolePosition();
+  
+    Serial.print("New Pole found at: ");
+    Serial.println(returnValue);
+  }
+}
+
+void testingAlgorithms::testLocatePoleHeadOn(blipperBrain* blipper, drivingBrain* wheelDriver) {
+
+  bool success;
+  bool findingPole = true;
+
+  int poleFindingReturnValue;
+
+   Serial.println("Type s to start");
+   while (Serial.available() <= 0);
+   Serial.read();
+
+  Serial.println("Starting Test");
+
+  blipper->rotateServo(90);
+  
+  delay(500);
+
+  Serial.print("Initial Pole Distance: ");
+  Serial.println(blipper->getUltrasonicRead(),10);
+
+  delay(100);
+
+  while (findingPole) {
+    wheelDriver->driveForwards(90);
+    delay(200);
+
+    poleFindingReturnValue = blipper->driveTowardsPole();
+  
+    wheelDriver->driveStop();
+  
+    if (poleFindingReturnValue) {
+      Serial.print("Found pole at distance: ");
+      Serial.println(blipper->lastReadingValue,10);
+      success = true;
+      findingPole = false;
+    } else {
+      Serial.print("Lost Pole at distance: ");
+      Serial.println(blipper->lastReadingValue,10);
+      delay(100);
+  
+      poleFindingReturnValue = blipper->findPolePosition();
+
+      Serial.print("New Pole position: ");
+      Serial.println(poleFindingReturnValue);
+  
+      if (poleFindingReturnValue == -1) {
+        success = false;
+        findingPole = false;
+      } else {
+        blipper->rotateServo(90);
+        wheelDriver->rotateDegrees(poleFindingReturnValue - 90);
+        delay(100);
+      }
+    }
+  }
+
+  if (success) {
+    Serial.println("SUCCESS");
+  } else {
+    Serial.print("FAILURE: last known pole position: ");
+    Serial.println(blipper->lastReadingValue,10);
+  }
+  
+  
+
+   
+
+
   
 }
 

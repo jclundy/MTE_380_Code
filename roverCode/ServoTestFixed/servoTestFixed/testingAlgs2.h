@@ -9,10 +9,20 @@ class testingAlgorithms {
   testingAlgorithms();
   ~testingAlgorithms();
 
-  //Blipper Specific Test
-  void testPopulationArray(blipperBrain* blipper);
-  //Blipper Specific Test
-  void testFilterArray(blipperBrain* blipper);
+
+//Blipper Specific Tests
+  void testDriveByPole(blipperBrain* blipper, drivingBrain* wheelDriver);
+
+  void testDriveToPole(blipperBrain* blipper, drivingBrain* wheelDriver);
+
+  void getBlipperDriveByArray(blipperBrain* blipper, drivingBrain* wheelDriver);
+
+  void getBlipperRotateArray(blipperBrain* blipper, drivingBrain* wheelDriver);
+
+  void testBlipperFindPolePosition(blipperBrain* blipper, drivingBrain* wheelDriver);
+
+  void testLocatePoleHeadOn(blipperBrain* blipper, drivingBrain* wheelDriver);
+  
 
 
 

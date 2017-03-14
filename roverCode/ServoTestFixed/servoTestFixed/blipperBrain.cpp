@@ -9,7 +9,7 @@ blipperBrain::blipperBrain(Servo* inputServo)
   pinMode(TRIG_PIN,OUTPUT);
   pinMode(ECHO_PIN,INPUT);
 
-  servoPos = mainServo->read();
+  lastReadingValue = 999;
 
   
 }
@@ -20,138 +20,185 @@ blipperBrain::~blipperBrain()
 }
 
 void blipperBrain::rotateServo(int pos) {
-
-  
-  Serial.print("servoPos ");
-  Serial.print(servoPos);
-  Serial.print("pos: ");
-  Serial.print(pos);
-  
-  unsigned int rotateDelay = abs(pos-servoPos) * 1000 / SERVO_DEGREES_PER_SEC + 5;
-  Serial.print("RD: ");
-  Serial.println(rotateDelay);
-
-  
   mainServo->write(pos);
-
-  
-  delay(rotateDelay);
-  servoPos = pos;
 }
 
-void blipperBrain::populatePositionArray() {
+double blipperBrain::waitToSeePole() {
 
-  if (servoPos != 0) {
-    mainServo->write(0);
-    delay(1000);
-  }
+  double readingValue = 999;
+  double tolerance = 10;
+  int windowLength = 50;
+  int ceilingValue = 100;
+  int numGoodReadings = 0;
 
-  int degreePerReading = 180 / NUM_READINGS;
 
+  bool searching = true;
 
-  for (int i = 0; i < NUM_READINGS; i ++) {
-    mainServo->write(i*degreePerReading);
-    delay(30);
-    
-    posReadings[i] = getUltrasonicRead();
-  }
-}
+  while (searching) {
+    readingValue = getUltrasonicRead();
 
-int blipperBrain::filterPositionArray() {
-
-  int verticalTol = 3;
-  int lengthTol = 8;
-
-  int* polePoints = new int[NUM_READINGS];
-  int polePointsSize = 0;
-
-  int desiredAngle = 90;
+    if (readingValue < ceilingValue) {
   
-  
-
-  bool isInTolerance;
-  
-  for (int i = 0; i < NUM_READINGS - lengthTol; i++) {
-
-    isInTolerance = true;
-    
-    for (int j = 1; j < lengthTol; j++) {
-      if (abs(posReadings[j+i]-posReadings[i]) > verticalTol) {
-        isInTolerance = false;
+      
+      
+      if (abs(readingValue - lastReadingValue) < tolerance) {
+        numGoodReadings++;
+      } else {
+        numGoodReadings = 0;
+      }
+      if (numGoodReadings >= windowLength) {
+        searching = false;
       }
     }
 
-    if (isInTolerance) {
-      polePoints[polePointsSize] = i + lengthTol/2;
-      polePointsSize++;
-    }
+    lastReadingValue = readingValue;
     
   }
 
-  int bestGuessIndex = 0;
-  int bestGuessValue = 180;
-
-  Serial.println("PolePoints array");
-
-  for (int i = 0; i < polePointsSize; i++) {
-    Serial.println(polePoints[i]);
-  }
-  
-  for (int i = 0; i < polePointsSize; i++) {
-
-    if (abs(polePoints[i] - desiredAngle) < bestGuessValue) {
-      bestGuessValue = abs(polePoints[i] - desiredAngle);
-      bestGuessIndex = i;
-    }
-  }
-
-  
-  bestGuessValue = polePoints[bestGuessIndex];
-
-  delete polePoints;
-
-  Serial.println("BestGuessValue:");
-
-  return bestGuessValue;
+  return readingValue;
   
 }
 
-int blipperBrain::getPoleAngle() {
 
-  populatePositionArray();
-  return filterPositionArray();
-  
-  
-}
 
-int blipperBrain::getUltrasonicRead() {
+double blipperBrain::getUltrasonicRead() {
 
   unsigned long t1;
   unsigned long t2;
   unsigned long pulseTimer;
   unsigned long pulse_width;
-  int cm;
+  double cm;
 
   digitalWrite(TRIG_PIN, HIGH);
   delayMicroseconds(10);
   digitalWrite(TRIG_PIN, LOW);
 
   pulseTimer = 0;
-
-  
+    
   while ( digitalRead(ECHO_PIN) == 0 && pulseTimer < 50000 ) {
     pulseTimer++;
   }
 
   if (pulseTimer < 5000) {
     t1 = micros();
-  while ( digitalRead(ECHO_PIN) == 1);
-  t2 = micros();
-  pulse_width = t2 - t1;
-  cm = pulse_width / 58.0;
+    while ( digitalRead(ECHO_PIN) == 1);
+    t2 = micros();
+    pulse_width = t2 - t1;
+    cm = pulse_width / 58.0;
   } else {
     cm = 999;
   }
 
+  if (cm < 0.01) {
+    cm = 999;
+  }
+    
   return cm;  
+}
+
+bool blipperBrain::driveTowardsPole() {
+
+  double readingValue;
+  double tolerance = 5;
+  int windowLength = 3;
+  int numBadReadings = 0;
+
+  lastReadingValue = getUltrasonicRead();
+  readingValue = lastReadingValue;
+
+  while (readingValue > 10) {
+    readingValue = getUltrasonicRead();
+
+    
+    if (abs(readingValue - lastReadingValue) > tolerance) {
+      numBadReadings++;
+    } else {
+      numBadReadings = 0;
+      lastReadingValue = readingValue;
+    }
+  
+    if (numBadReadings >= windowLength) {
+      //Serial.print("Lost pole at: ");
+      //Serial.println(readingValue,10);
+      return false;
+    }
+    
+
+    
+  }
+
+  return true;
+}
+
+int blipperBrain::findPolePosition() {
+
+  double readingValue = 999;
+  double tolerance = 5;
+  int windowLength = 10;
+  int numGoodReadings = 0;
+
+  unsigned int numReadings = 0;
+
+  int servoPosition = 90;
+  int degToSearch = 30;
+
+  int lowerDegLimit = 90 - degToSearch;
+  int upperDegLimit = 90 + degToSearch;
+
+
+  bool searching = true;
+
+  bool searchPhase1 = true;
+
+  while (searching) {
+
+    readingValue = getUltrasonicRead();
+
+    if (abs(readingValue - lastReadingValue) < tolerance) {
+      numGoodReadings++;
+    } else {
+      numGoodReadings = 0;
+    }
+    if (numGoodReadings >= windowLength) {
+      searching = false;
+    }
+    
+    if (searchPhase1) {
+      
+      servoPosition--;
+  
+      if (servoPosition < lowerDegLimit) {
+        searchPhase1 = false;
+        rotateServo(90);
+        servoPosition = 90;
+        delay(1000);
+      }
+    } else {
+  
+      servoPosition++;
+
+      if (servoPosition > upperDegLimit) {
+        rotateServo(90);
+        delay(1000);
+        return -1;
+      }
+    }
+
+    rotateServo(servoPosition);
+    numReadings++;
+    delay(100);
+      
+  }
+
+
+  lastReadingValue = readingValue;
+  if (numReadings == windowLength) {
+    return 90;
+  } else {
+    return servoPosition;
+  }
+
+  
+  
+  
 }
