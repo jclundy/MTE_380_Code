@@ -10,7 +10,7 @@ class testingAlgorithms {
   ~testingAlgorithms();
 
 
-//Blipper Specific Tests
+//Blipper Specific Tests - not useful for Liz and Lior
   void testDriveByPole(blipperBrain* blipper, drivingBrain* wheelDriver);
 
   void testDriveToPole(blipperBrain* blipper, drivingBrain* wheelDriver);
@@ -22,6 +22,8 @@ class testingAlgorithms {
   void testBlipperFindPolePosition(blipperBrain* blipper, drivingBrain* wheelDriver);
 
   void testLocatePoleHeadOn(blipperBrain* blipper, drivingBrain* wheelDriver);
+
+  void static waitForInputToStart();
   
 
 

@@ -16,11 +16,13 @@ class blipperBrain
 {
 
   friend class testingAlgorithms;
+  friend class roverBrain;
 public:
   blipperBrain(Servo* inputServo);
   ~blipperBrain();
 
   double lastReadingValue;
+  double lastKnownPolePosition;
   
   
   void rotateServo(int pos);

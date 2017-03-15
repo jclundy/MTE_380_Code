@@ -15,16 +15,17 @@
 #define RIGHT_FULL_BACKWARDS_SPEED 1000
 
 //Once you know your 90 degree delay just put it here
-#define DEG_90_TURN_DELAY 900
+#define DEG_90_TURN_DELAY 1000
 
 //Once you know your trim value just put it here
-#define INITIAL_TRIM_VALUE 0.1
+#define INITIAL_TRIM_VALUE 0.65
 
 //A class to control the driving of the robot
 class drivingBrain
 {
 
   friend class testingAlgorithms;
+  friend class roverBrain;
 public:
   drivingBrain(Servo* leftServo, Servo* rightServo);
   ~drivingBrain();

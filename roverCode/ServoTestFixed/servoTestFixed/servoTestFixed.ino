@@ -1,18 +1,14 @@
 
 #include <Servo.h>
-#include "blipperBrain.h"
+#include "roverBrain.h"
 #include "testingAlgs2.h"
-#include "drivingBrain.h"
 
 
 #define LEFT_MOTOR_PIN 11
 #define RIGHT_MOTOR_PIN 10
 #define BLIPPER_SERVO_PIN 9
 
-
-blipperBrain* blipper;
-drivingBrain* wheelDriver;
-
+roverBrain* rover;
 
 
 void setup() {
@@ -27,8 +23,7 @@ void setup() {
   servoR_p->attach(RIGHT_MOTOR_PIN);
   servoSensor_p->attach(BLIPPER_SERVO_PIN); 
   
-  blipper = new blipperBrain(servoSensor_p);
-  wheelDriver = new drivingBrain(servoL_p, servoR_p);
+  rover = new roverBrain(servoL_p,servoR_p,servoSensor_p);
   Serial.println("Initalized");
 
 }
@@ -37,13 +32,20 @@ void setup() {
 void loop() {
 
 
-  testingAlgorithms* mainTest = new testingAlgorithms();
+  //testingAlgorithms* mainTest = new testingAlgorithms();
   //mainTest->testDrivingTrim(wheelDriver);
   //mainTest->getBlipperDriveByArray(blipper, wheelDriver);
   //mainTest->getBlipperRotateArray(blipper, wheelDriver);
   //mainTest->testDriveByPole(blipper, wheelDriver);
   //mainTest->testDriveToPole(blipper, wheelDriver);
   //mainTest->testBlipperFindPolePosition(blipper, wheelDriver);
-  mainTest->testLocatePoleHeadOn(blipper, wheelDriver);
+  //mainTest->testLocatePoleHeadOn(blipper, wheelDriver);
+
+  
+  testingAlgorithms::waitForInputToStart();
+  rover->driveToPole();
+
+  
+  
 
 }

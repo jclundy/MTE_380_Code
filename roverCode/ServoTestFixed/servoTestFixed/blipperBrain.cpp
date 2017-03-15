@@ -55,6 +55,7 @@ double blipperBrain::waitToSeePole() {
     
   }
 
+  lastKnownPolePosition = readingValue;
   return readingValue;
   
 }
@@ -103,17 +104,17 @@ bool blipperBrain::driveTowardsPole() {
   int windowLength = 3;
   int numBadReadings = 0;
 
-  lastReadingValue = getUltrasonicRead();
-  readingValue = lastReadingValue;
+  readingValue = lastKnownPolePosition;
 
   while (readingValue > 10) {
     readingValue = getUltrasonicRead();
 
     
-    if (abs(readingValue - lastReadingValue) > tolerance) {
+    if (abs(readingValue - lastKnownPolePosition) > tolerance) {
       numBadReadings++;
     } else {
       numBadReadings = 0;
+      lastKnownPolePosition = readingValue;
       lastReadingValue = readingValue;
     }
   
@@ -122,9 +123,6 @@ bool blipperBrain::driveTowardsPole() {
       //Serial.println(readingValue,10);
       return false;
     }
-    
-
-    
   }
 
   return true;
@@ -133,14 +131,14 @@ bool blipperBrain::driveTowardsPole() {
 int blipperBrain::findPolePosition() {
 
   double readingValue = 999;
-  double tolerance = 5;
+  double tolerance = 10;
   int windowLength = 10;
   int numGoodReadings = 0;
 
   unsigned int numReadings = 0;
 
   int servoPosition = 90;
-  int degToSearch = 30;
+  int degToSearch = 60;
 
   int lowerDegLimit = 90 - degToSearch;
   int upperDegLimit = 90 + degToSearch;
@@ -154,7 +152,7 @@ int blipperBrain::findPolePosition() {
 
     readingValue = getUltrasonicRead();
 
-    if (abs(readingValue - lastReadingValue) < tolerance) {
+    if (abs(readingValue - lastKnownPolePosition) < tolerance) {
       numGoodReadings++;
     } else {
       numGoodReadings = 0;
@@ -171,7 +169,8 @@ int blipperBrain::findPolePosition() {
         searchPhase1 = false;
         rotateServo(90);
         servoPosition = 90;
-        delay(1000);
+        numReadings = 0;
+        delay(500);
       }
     } else {
   
@@ -186,12 +185,13 @@ int blipperBrain::findPolePosition() {
 
     rotateServo(servoPosition);
     numReadings++;
-    delay(100);
+    delay(20);
       
   }
 
 
   lastReadingValue = readingValue;
+  rotateServo(90);
   if (numReadings == windowLength) {
     return 90;
   } else {

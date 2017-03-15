@@ -98,6 +98,12 @@ if (Serial.available() > 0) {
   
 }
 
+void testingAlgorithms::waitForInputToStart() {
+  Serial.println("Type S to start to start driving by pole");
+  while (Serial.available() <= 0);
+  Serial.read();
+}
+
 void testingAlgorithms::testDriveByPole(blipperBrain* blipper, drivingBrain* wheelDriver) {
 
   double returnValue;
@@ -115,10 +121,12 @@ void testingAlgorithms::testDriveByPole(blipperBrain* blipper, drivingBrain* whe
   wheelDriver->driveForwards(90);
   
   returnValue = blipper->waitToSeePole();
+
+  delay(1000);
   
   Serial.print("Pole Found: ");
   
-  Serial.println(returnValue,100);
+  Serial.println(returnValue,10);
   
   wheelDriver->rotateDegrees(90);
   
@@ -130,13 +138,13 @@ void testingAlgorithms::testDriveByPole(blipperBrain* blipper, drivingBrain* whe
   
   double difference = blipper->getUltrasonicRead();
   
-  Serial.println(difference, 100);
+  Serial.println(difference, 10);
 
   Serial.print("Difference: ");
 
   difference = abs(difference - returnValue);
 
-  Serial.println(difference,100);
+  Serial.println(difference,10);
 
 
 
@@ -196,17 +204,29 @@ void testingAlgorithms::testDriveToPole(blipperBrain* blipper, drivingBrain* whe
 
   bool returnValue;
 
-   Serial.println("Type S to start driving to pole");
-   while (Serial.available() <= 0);
-   Serial.read();
+  unsigned int inputValue;
+  double inputDistance;
+
+ Serial.print("Initial Distance: ");
+ Serial.println(blipper->getUltrasonicRead(),10);
+ 
+ Serial.println("Type in pole distance to start driving * 100");
+ while (Serial.available() <= 0);
+ inputValue = Serial.parseInt();
+ inputDistance = inputValue / 100.0;
+
+ Serial.println(inputDistance,10);
   
   Serial.println("Starting Test");
   
   blipper->rotateServo(90);
+  blipper->lastReadingValue = inputDistance;
+  blipper->lastKnownPolePosition = inputDistance;
   
   delay(500);
   
   wheelDriver->driveForwards(90);
+  delay(10);
 
   returnValue = blipper->driveTowardsPole();
 
@@ -214,10 +234,10 @@ void testingAlgorithms::testDriveToPole(blipperBrain* blipper, drivingBrain* whe
 
   if (returnValue) {
     Serial.print("Found pole at distance: ");
-    Serial.println(blipper->lastReadingValue,100);
+    Serial.println(blipper->lastReadingValue,10);
   } else {
     Serial.print("Lost Pole at distance: ");
-    Serial.println(blipper->lastReadingValue,100);
+    Serial.println(blipper->lastReadingValue,10);
     delay(100);
     
   } 
@@ -246,8 +266,9 @@ void testingAlgorithms::testBlipperFindPolePosition(blipperBrain* blipper, drivi
 
   blipper->rotateServo(90);
   blipper->lastReadingValue = inputDistance;
+  blipper->lastKnownPolePosition = inputDistance;
   
-  
+  delay(500);
 
   returnValue = blipper->findPolePosition();
 
@@ -267,6 +288,7 @@ void testingAlgorithms::testBlipperFindPolePosition(blipperBrain* blipper, drivi
     Serial.print("New Pole found at: ");
     Serial.println(returnValue);
   }
+  blipper->rotateServo(90);
 }
 
 void testingAlgorithms::testLocatePoleHeadOn(blipperBrain* blipper, drivingBrain* wheelDriver) {
@@ -276,24 +298,30 @@ void testingAlgorithms::testLocatePoleHeadOn(blipperBrain* blipper, drivingBrain
 
   int poleFindingReturnValue;
 
-   Serial.println("Type s to start");
-   while (Serial.available() <= 0);
-   Serial.read();
+  unsigned int inputValue;
+  double inputDistance;
 
+  Serial.print("Initial Distance: ");
+  Serial.println(blipper->getUltrasonicRead(),10);
+   
+  Serial.println("Type in pole distance to start locating * 100");
+  while (Serial.available() <= 0);
+  inputValue = Serial.parseInt();
+  inputDistance = inputValue / 100.0;
+
+  Serial.println(inputDistance,10);
+  
   Serial.println("Starting Test");
 
   blipper->rotateServo(90);
+  blipper->lastReadingValue = inputDistance;
+  blipper->lastKnownPolePosition = inputDistance;
   
   delay(500);
 
-  Serial.print("Initial Pole Distance: ");
-  Serial.println(blipper->getUltrasonicRead(),10);
-
-  delay(100);
-
   while (findingPole) {
     wheelDriver->driveForwards(90);
-    delay(200);
+    delay(10);
 
     poleFindingReturnValue = blipper->driveTowardsPole();
   
@@ -331,14 +359,9 @@ void testingAlgorithms::testLocatePoleHeadOn(blipperBrain* blipper, drivingBrain
     Serial.print("FAILURE: last known pole position: ");
     Serial.println(blipper->lastReadingValue,10);
   }
-  
-  
-
-   
-
-
-  
 }
+
+
 
 
 
