@@ -1,7 +1,7 @@
 #define SERIAL_BAUD_RATE 9600
 #define OUTPUT_PIN 4
 
-int outputValue = HIGH;
+int outputValue = LOW;
 
 void setup() {
   pinMode(OUTPUT_PIN, OUTPUT);
