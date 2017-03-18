@@ -32,8 +32,9 @@ void setup() {
 void loop() {
 
 
-  //testingAlgorithms* mainTest = new testingAlgorithms();
+  testingAlgorithms* mainTest = new testingAlgorithms();
   //mainTest->testDrivingTrim(wheelDriver);
+  mainTest->findRotationValue(rover->wheelDriver);
   //mainTest->getBlipperDriveByArray(blipper, wheelDriver);
   //mainTest->getBlipperRotateArray(blipper, wheelDriver);
   //mainTest->testDriveByPole(blipper, wheelDriver);
@@ -42,8 +43,8 @@ void loop() {
   //mainTest->testLocatePoleHeadOn(blipper, wheelDriver);
 
   
-  testingAlgorithms::waitForInputToStart();
-  rover->driveToPole();
+  //testingAlgorithms::waitForUltrasonicInputToStart(rover);
+  //rover->driveToPole();
 
   
   

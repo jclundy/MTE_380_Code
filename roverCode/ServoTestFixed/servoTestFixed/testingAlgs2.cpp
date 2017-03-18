@@ -104,6 +104,10 @@ void testingAlgorithms::waitForInputToStart() {
   Serial.read();
 }
 
+void testingAlgorithms::waitForUltrasonicInputToStart(roverBrain* rover) {
+  while (rover->blipper->getUltrasonicRead() > 10);
+}
+
 void testingAlgorithms::testDriveByPole(blipperBrain* blipper, drivingBrain* wheelDriver) {
 
   double returnValue;

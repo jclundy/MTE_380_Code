@@ -9,7 +9,7 @@
 #include "drivingBrain.h"
 #include "blipperBrain.h"
 
-#define DEBUG
+//#define DEBUG
 
 
 
@@ -28,11 +28,12 @@ public:
   void redefinePoleDistance();
   bool driveToPoleHeadOn();
 
+  drivingBrain* wheelDriver;
+  blipperBrain* blipper;
 
 private:
 
- drivingBrain* wheelDriver;
- blipperBrain* blipper;
+ 
   
 
   

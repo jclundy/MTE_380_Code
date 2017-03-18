@@ -1,5 +1,6 @@
 #include "blipperBrain.h"
 #include "drivingBrain.h"
+#include "roverBrain.h"
 
 //A class to store repeated tests
 class testingAlgorithms {
@@ -24,6 +25,8 @@ class testingAlgorithms {
   void testLocatePoleHeadOn(blipperBrain* blipper, drivingBrain* wheelDriver);
 
   void static waitForInputToStart();
+
+  void static waitForUltrasonicInputToStart(roverBrain* rover);
   
 
 
