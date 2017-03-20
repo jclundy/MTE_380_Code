@@ -20,13 +20,15 @@ class testingAlgorithms {
 
   void getBlipperRotateArray(blipperBrain* blipper, drivingBrain* wheelDriver);
 
-  void testBlipperFindPolePosition(blipperBrain* blipper, drivingBrain* wheelDriver);
+  void testBlipperFindPolePosition(roverBrain* rover);
 
-  void testLocatePoleHeadOn(blipperBrain* blipper, drivingBrain* wheelDriver);
+  void testLocatePoleHeadOn(roverBrain* rover);
 
   void static waitForInputToStart();
 
   void static waitForUltrasonicInputToStart(roverBrain* rover);
+
+  void static rotateUntilSeePole(roverBrain* rover);
   
 
 
@@ -47,13 +49,14 @@ class testingAlgorithms {
   //Use this to test how well your robot drives at different power levels
   void testDrivePower(drivingBrain* driver);
 
-  //Waits for a serial input of 0 to inf for microseconds input (usually 0 to 2500) and will write that microseconds to the left motor.
+  //Waits for a serial input of 0 to inf for microseconds input (usually 0 to 2500) and will write that microseconds to the motor.
   //use to find your stop, forwards and backwards values.
-  void leftServoTestMicroseconds(drivingBrain* driver);
+  void frontLeftServoTestMicroseconds(drivingBrain* driver);
+  void frontRightServoTestMicroseconds(drivingBrain* driver);
+  void backLeftServoTestMicroseconds(drivingBrain* driver);
+  void backRightServoTestMicroseconds(drivingBrain* driver);
 
-  //Waits for a serial input of 0 to inf for microseconds input (usually 0 to 2500) and will write that microseconds to the right motor.
-  //use to find your stop, forwards and backwards values.
-  void rightServoTestMicroseconds(drivingBrain* driver);
+  
 
   
   
