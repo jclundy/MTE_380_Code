@@ -9,7 +9,12 @@
 #include "drivingBrain.h"
 #include "blipperBrain.h"
 
-//#define DEBUG
+#define DEBUG
+#define LOOKLEFT
+//#define LOOKRIGHT
+
+#define POLEDRIVEDELAYSLOPE 0
+#define POLEDRIVEDELAYB 1400
 
 
 
@@ -18,15 +23,17 @@ class roverBrain
 
   friend class testingAlgorithms;
 public:
-  roverBrain(Servo* leftServo, Servo* rightServo, Servo* inputServo);
+  roverBrain(Servo* frontLeftServo, Servo* frontRightServo, Servo* backLeftServo, Servo* backRightServo, Servo* inputServo);
   ~roverBrain();
 
-  void driveToPole();
+  bool driveToPole();
 
   void driveByPole();
   bool orientToPole();
   void redefinePoleDistance();
   bool driveToPoleHeadOn();
+
+  bool rotateUntilSeePole(double tolerance, int rotateDirection);
 
   drivingBrain* wheelDriver;
   blipperBrain* blipper;

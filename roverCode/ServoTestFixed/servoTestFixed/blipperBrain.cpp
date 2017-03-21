@@ -26,9 +26,9 @@ void blipperBrain::rotateServo(int pos) {
 double blipperBrain::waitToSeePole() {
 
   double readingValue = 999;
-  double tolerance = 10;
-  int windowLength = 50;
-  int ceilingValue = 100;
+  double tolerance = 2;
+  int windowLength = 20;
+  int ceilingValue = 70;
   int numGoodReadings = 0;
 
 
@@ -70,9 +70,13 @@ double blipperBrain::getUltrasonicRead() {
   unsigned long pulse_width;
   double cm;
 
+  delay(15);
+
   digitalWrite(TRIG_PIN, HIGH);
   delayMicroseconds(10);
   digitalWrite(TRIG_PIN, LOW);
+
+  
 
   pulseTimer = 0;
     
@@ -80,7 +84,7 @@ double blipperBrain::getUltrasonicRead() {
     pulseTimer++;
   }
 
-  if (pulseTimer < 5000) {
+  if (pulseTimer < 50000) {
     t1 = micros();
     while ( digitalRead(ECHO_PIN) == 1);
     t2 = micros();
@@ -92,30 +96,32 @@ double blipperBrain::getUltrasonicRead() {
 
   if (cm < 0.01) {
     cm = 999;
-  }
-    
+  }  
   return cm;  
 }
 
 bool blipperBrain::driveTowardsPole() {
 
   double readingValue;
-  double tolerance = 5;
+  double tolerance = 10;
   int windowLength = 3;
   int numBadReadings = 0;
 
   readingValue = lastKnownPolePosition;
 
-  while (readingValue > 10) {
+  while (readingValue > 7) {
     readingValue = getUltrasonicRead();
 
     
     if (abs(readingValue - lastKnownPolePosition) > tolerance) {
-      numBadReadings++;
+      if (abs(readingValue - lastReadingValue) <= tolerance) {
+        numBadReadings++;
+      }
     } else {
       numBadReadings = 0;
       lastKnownPolePosition = readingValue;
-      lastReadingValue = readingValue;
+    
+      
     }
   
     if (numBadReadings >= windowLength) {
@@ -123,15 +129,18 @@ bool blipperBrain::driveTowardsPole() {
       //Serial.println(readingValue,10);
       return false;
     }
+
+    lastReadingValue = readingValue;
   }
 
   return true;
 }
 
-int blipperBrain::findPolePosition() {
+
+
+int blipperBrain::findPolePosition(double tolerance) {
 
   double readingValue = 999;
-  double tolerance = 10;
   int windowLength = 10;
   int numGoodReadings = 0;
 
@@ -147,6 +156,9 @@ int blipperBrain::findPolePosition() {
   bool searching = true;
 
   bool searchPhase1 = true;
+
+  Serial.print("Finding pole at last known position: ");
+  Serial.println(lastKnownPolePosition,10);
 
   while (searching) {
 
@@ -185,8 +197,6 @@ int blipperBrain::findPolePosition() {
 
     rotateServo(servoPosition);
     numReadings++;
-    delay(20);
-      
   }
 
 
@@ -197,8 +207,22 @@ int blipperBrain::findPolePosition() {
   } else {
     return servoPosition;
   }
+}
+
+double blipperBrain::getAccurateUltrasonicRead() {
+
+  double total = 0;
+  int numReadings = 20;
+
+  for (int i = 0; i < numReadings; i++) {
+    total = total + getUltrasonicRead();
+  }
+
+  total = total / numReadings;
+
+  return total;
+
 
   
-  
-  
 }
+

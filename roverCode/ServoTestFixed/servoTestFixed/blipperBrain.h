@@ -29,14 +29,19 @@ public:
   
   double getUltrasonicRead();
 
+  double getAccurateUltrasonicRead();
+
   double waitToSeePole();
   bool driveTowardsPole();
+
   
 
-  int findPolePosition();
+  int findPolePosition(double tolerance);
+
+  Servo* mainServo;
 
 private:
-  Servo* mainServo;
+  
   
 
   
