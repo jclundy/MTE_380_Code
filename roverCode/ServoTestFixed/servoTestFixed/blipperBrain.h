@@ -31,7 +31,7 @@ public:
 
   double getAccurateUltrasonicRead();
 
-  double waitToSeePole();
+  double waitToSeePole(double wallDistance);
   bool driveTowardsPole();
 
   

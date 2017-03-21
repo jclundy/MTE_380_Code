@@ -3,7 +3,6 @@
 #include "roverBrain.h"
 #include "testingAlgs2.h"
 
-
 #define FRONT_LEFT_MOTOR_PIN 11
 #define FRONT_RIGHT_MOTOR_PIN 10
 #define BACK_LEFT_MOTOR_PIN 3
@@ -17,6 +16,7 @@ void setup() {
 
   Serial.begin(9600);
 
+  //Servo pointers
   Servo* servoFL_p = new Servo();
   Servo* servoFR_p = new Servo();
   Servo* servoBL_p = new Servo();
@@ -31,7 +31,10 @@ void setup() {
   servoSensor_p->attach(BLIPPER_SERVO_PIN);
 
   rover = new roverBrain(servoFL_p, servoFR_p, servoBL_p, servoBR_p, servoSensor_p);
-  Serial.println("Initalized");
+
+  #ifdef DEBUG
+    Serial.println("Initalized");
+  #endif
 
 }
 
@@ -43,7 +46,7 @@ void loop() {
   //mainTest->frontLeftServoTestMicroseconds(rover->wheelDriver);
   //mainTest->testDrivingTrim(rover->wheelDriver);
   //mainTest->testDrivePower(rover->wheelDriver);
-  //mainTest->findRotationValue(rover->wheelDriver);
+  //mainTest->testRotationDegrees(rover->wheelDriver);
   //mainTest->getBlipperDriveByArray(rover->blipper, rover->wheelDriver);
   //mainTest->getBlipperRotateArray(rover->blipper, rover->wheelDriver);
   //mainTest->testDriveByPole(blipper, wheelDriver);

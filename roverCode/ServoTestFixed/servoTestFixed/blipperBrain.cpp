@@ -23,12 +23,12 @@ void blipperBrain::rotateServo(int pos) {
   mainServo->write(pos);
 }
 
-double blipperBrain::waitToSeePole() {
+double blipperBrain::waitToSeePole(double wallDistance) {
 
   double readingValue = 999;
   double tolerance = 2;
   int windowLength = 20;
-  int ceilingValue = 70;
+  double ceilingValue = wallDistance - 30;
   int numGoodReadings = 0;
 
 

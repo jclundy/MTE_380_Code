@@ -57,9 +57,9 @@ void testingAlgorithms::testRotationDegrees(drivingBrain* wheelDriver) {
 
   if (Serial.available() > 0) {
       incomingInt = Serial.parseInt();
-      wheelDriver->rotateDegrees(incomingInt);
+      wheelDriver->rotateAtSpeed(incomingInt);
       delay(1000);
-      wheelDriver->rotateDegrees(-incomingInt);
+      wheelDriver->driveStop();
     }
 }
 
@@ -151,7 +151,7 @@ void testingAlgorithms::testDriveByPole(blipperBrain* blipper, drivingBrain* whe
   
   wheelDriver->driveForwards(90);
   
-  returnValue = blipper->waitToSeePole();
+  returnValue = blipper->waitToSeePole(200.0);
 
   delay(1000);
   
