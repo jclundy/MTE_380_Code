@@ -47,15 +47,12 @@ void drivingBrain::driveStop() {
 
 void drivingBrain::rotateAtSpeed(int power) {
 
-<<<<<<< HEAD
-  int leftServoMicroseconds = LEFT_STOP_SPEED - (LEFT_FULL_FORWARDS_SPEED - LEFT_STOP_SPEED) * (power / 100.0);
-  int rightServoMicroseconds = RIGHT_STOP_SPEED + (RIGHT_FULL_FORWARDS_SPEED - RIGHT_STOP_SPEED) * (power / 100.0);
-=======
+
   int frontLeftServoMicroseconds = FRONT_LEFT_STOP_SPEED + (FRONT_LEFT_FULL_FORWARDS_SPEED - FRONT_LEFT_STOP_SPEED) * (power / 100.0);
   int frontRightServoMicroseconds = FRONT_RIGHT_STOP_SPEED + (FRONT_RIGHT_STOP_SPEED - FRONT_RIGHT_FULL_FORWARDS_SPEED) * (power / 100.0);
   int backLeftServoMicroseconds = BACK_LEFT_STOP_SPEED + (BACK_LEFT_FULL_FORWARDS_SPEED - BACK_LEFT_STOP_SPEED) * (power / 100.0);
   int backRightServoMicroseconds = BACK_RIGHT_STOP_SPEED + (BACK_RIGHT_STOP_SPEED - BACK_RIGHT_FULL_FORWARDS_SPEED) * (power / 100.0);
->>>>>>> origin/master
+
 
   
   frontLeftServo->writeMicroseconds(frontLeftServoMicroseconds);
