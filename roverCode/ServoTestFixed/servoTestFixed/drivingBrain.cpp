@@ -38,8 +38,8 @@ void drivingBrain::driveStop() {
 
 void drivingBrain::rotateAtSpeed(int power) {
 
-  int leftServoMicroseconds = LEFT_STOP_SPEED - (LEFT_FULL_FORWARDS_SPEED - LEFT_STOP_SPEED) * (power / 100.0) * (1 - trimValue);
-  int rightServoMicroseconds = RIGHT_STOP_SPEED + (RIGHT_FULL_FORWARDS_SPEED - RIGHT_STOP_SPEED) * (power / 100.0) * (1 + trimValue);
+  int leftServoMicroseconds = LEFT_STOP_SPEED - (LEFT_FULL_FORWARDS_SPEED - LEFT_STOP_SPEED) * (power / 100.0);
+  int rightServoMicroseconds = RIGHT_STOP_SPEED + (RIGHT_FULL_FORWARDS_SPEED - RIGHT_STOP_SPEED) * (power / 100.0);
 
   
   leftServo->writeMicroseconds(leftServoMicroseconds);

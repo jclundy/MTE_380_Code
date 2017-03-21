@@ -183,8 +183,10 @@ void resetLift(){
 
 void loop() {
 
-  /*
-  // resetLift();
+  // Adjust relative speed? Y/N
+
+  // write test 
+  resetLift();
 
   // debugPrintln("waiting for press and release of both switches");
   //Wait for both right and left switch press and release
@@ -230,6 +232,5 @@ void loop() {
   
   debugPrintln("waiting for manual lift reset");
   while (readButton(SWITCH_HEIGHT_PIN)){}
-  */
 
 }
