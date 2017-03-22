@@ -6,8 +6,8 @@
 #define FRONT_LEFT_MOTOR_PIN 11
 #define FRONT_RIGHT_MOTOR_PIN 10
 #define BACK_LEFT_MOTOR_PIN 3
-#define BACK_RIGHT_MOTOR_PIN 5
-#define BLIPPER_SERVO_PIN 9
+#define BACK_RIGHT_MOTOR_PIN 9
+#define WALL_DIRECTION_PIN A0
 
 roverBrain* rover;
 
@@ -21,16 +21,27 @@ void setup() {
   Servo* servoFR_p = new Servo();
   Servo* servoBL_p = new Servo();
   Servo* servoBR_p = new Servo();
-  Servo* servoSensor_p = new Servo();
+
+  pinMode(FRONT_LEFT_MOTOR_PIN,OUTPUT);
+  pinMode(FRONT_RIGHT_MOTOR_PIN,OUTPUT);
+  pinMode(BACK_LEFT_MOTOR_PIN,OUTPUT);
+  pinMode(BACK_RIGHT_MOTOR_PIN,OUTPUT);
 
   servoFL_p->attach(FRONT_LEFT_MOTOR_PIN);
   servoFR_p->attach(FRONT_RIGHT_MOTOR_PIN);
   servoBL_p->attach(BACK_LEFT_MOTOR_PIN);
   servoBR_p->attach(BACK_RIGHT_MOTOR_PIN);
 
-  servoSensor_p->attach(BLIPPER_SERVO_PIN);
+  rover = new roverBrain(servoFL_p, servoFR_p, servoBL_p, servoBR_p);
 
-  rover = new roverBrain(servoFL_p, servoFR_p, servoBL_p, servoBR_p, servoSensor_p);
+  //Set wall direction
+  pinMode(WALL_DIRECTION_PIN,INPUT);
+  int wallDirectionReadValue = digitalRead(WALL_DIRECTION_PIN);
+  if (wallDirectionReadValue == HIGH) {
+    rover->blipper->setWallSide(1);
+  } else {
+    rover->blipper->setWallSide(2);
+  }
 
   #ifdef DEBUG
     Serial.println("Initalized");
@@ -56,11 +67,17 @@ void loop() {
 
 
   //testingAlgorithms::waitForUltrasonicInputToStart(rover);
+  Serial.println(rover->blipper->getFrontUltrasonicRead(),1);
   testingAlgorithms::waitForInputToStart();
-  rover->driveToPole();
-  //rover->driveByPole();
-  //testingAlgorithms::rotateUntilSeePole(rover);
+  //rover->driveToPole();
+  //rover->blipper->setWallSide(1);
+  
+  rover->blipper->lastKnownPolePosition = 67;
+  rover->blipper->lastKnownWallDistance = 100;
+  //rover->rotateUntilSeePole(15,-90,2000);
+  rover->driveToPoleHeadOn();
 
+  
 
 
 }

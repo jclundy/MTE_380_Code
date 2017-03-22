@@ -355,7 +355,7 @@ void testingAlgorithms::rotateUntilSeePole(roverBrain* rover) {
   
   Serial.println("Starting Test");
   
-  success = rover->rotateUntilSeePole(20,90);
+  success = rover->rotateUntilSeePole(20,90,2000);
 
   if (success) {
     Serial.println("Success!");
