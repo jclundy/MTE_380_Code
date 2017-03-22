@@ -62,18 +62,5 @@ void loop() {
   //testingAlgorithms::rotateUntilSeePole(rover);
 
 
-  /*
-  for (int j = 0; j < 50; j += 5) {
-    Serial.println(j);
-    for (int i = 0; i < 50; i++) {
-      Serial.println(rover->blipper->getUltrasonicRead(),1);
-      delay(j);
-    }
-  }
-
-  while(true);
-  */
-
-
 
 }

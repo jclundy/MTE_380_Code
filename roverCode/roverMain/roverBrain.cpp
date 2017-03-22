@@ -3,7 +3,7 @@
 
 roverBrain::roverBrain(Servo* frontLeftServo, Servo* frontRightServo, Servo* backLeftServo, Servo* backRightServo, Servo* sensorServo) {
 
-  blipper = new blipperBrain(sensorServo);
+  blipper = new blipperBrain();
   wheelDriver = new drivingBrain(frontLeftServo, frontRightServo, backLeftServo, backRightServo);
   
 }
@@ -16,12 +16,22 @@ roverBrain::~roverBrain() {
 bool roverBrain::driveToPole() {
 
   bool roverResult;
+  int driveByPoleResult;
+  int poleRotationToleranceSize = 15;
   
-  driveByPole();
-  
-  //XXXChanging orientation
-  //roverResult = orientToPole();
-  roverResult = rotateUntilSeePole(15,90);
+  driveByPoleResult = driveByPole();
+
+  if (driveByPoleResult == 1) {
+    roverResult = rotateUntilSeePole(poleRotationToleranceSize,-90);
+  } else if (driveByPoleResult == 2) {
+    roverResult = rotateUntilSeePole(poleRotationToleranceSize,90);
+  }
+  else {
+    #ifdef DEBUG
+      Serial.println("Succeeded- Found Pole at Front");
+    #endif
+    return true;
+  }
   
   if (!roverResult) {
     #ifdef DEBUG
@@ -39,71 +49,45 @@ bool roverBrain::driveToPole() {
     return true;
   } else {
     #ifdef DEBUG
-      Serial.println("SUCCESS - DRIVETOPOLE");
+      Serial.println("FAIL - DRIVETOPOLE");
     #endif
     return false;
   }
-  
-  
-  
 }
 
-void roverBrain::driveByPole() {
-  double returnValue;
-  double wallDistance;
-
-  #ifdef LOOKRIGHT
-    blipper->rotateServo(5);
-  #endif
-  #ifdef LOOKLEFT
-    blipper->rotateServo(175);
-  #endif
-  delay(400);
-
-  wallDistance = 180;
-
+int roverBrain::driveByPole() {
+  int blipperReturnValue;
+  
   #ifdef DEBUG
     Serial.println("Starting Driving by pole");
-    Serial.print("Identified Wall Distance: ");
-    Serial.println(wallDistance,1);
   #endif
-  delay(100);
 
   wheelDriver->driveForwards(90);
-  returnValue = blipper->waitToSeePole(wallDistance);
+  blipperReturnValue = blipper->waitToSeePole();
 
   double delayAmountDouble = blipper->lastKnownPolePosition * POLEDRIVEDELAYSLOPE + POLEDRIVEDELAYB;
   int delayAmountInt = (int) delayAmountDouble;
   #ifdef DEBUG
-    Serial.print("Delay: ");
+    Serial.print("Turn Delay: ");
     Serial.println(delayAmountInt);
   #endif
-
-  blipper->rotateServo(90);
     
   delay(delayAmountInt);
-
-  #ifdef DEBUG
-    Serial.print("Pole Found: ");
-    Serial.println(returnValue,10);
-    Serial.println("SUCCESS - DRIVEBYPOLE");
-  #endif
-
   
   wheelDriver->driveStop();
 
   #ifdef DEBUG
     Serial.println("Finished driving by pole");
   #endif
-  
-  delay(50);
-  
+
+  return blipperReturnValue;
+ 
 }
 
 bool roverBrain::rotateUntilSeePole(double tolerance, int rotateDirection) {
 
   double readingValue = 999;
-  int windowLength = 5;
+  int windowLength = 8;
   int numGoodReadings = 0;
 
   int startReadingTime = 50;
@@ -133,7 +117,7 @@ bool roverBrain::rotateUntilSeePole(double tolerance, int rotateDirection) {
 
   while (searching) {
   
-    readingValue = blipper->getUltrasonicRead();
+    readingValue = blipper->getFrontUltrasonicRead();
 
     if (abs(readingValue - blipper->lastKnownPolePosition) < tolerance) {
       numGoodReadings++;
@@ -142,12 +126,28 @@ bool roverBrain::rotateUntilSeePole(double tolerance, int rotateDirection) {
     }
     if (numGoodReadings >= windowLength) {
 
+      wheelDriver->driveStop();
+      delay(20);
+      if (rotateDirection > 0) {
+        blipper->lastKnownWallDistance = blipper->getRightUltrasonicRead();
+        #ifdef DEBUG
+          Serial.print("Wall on right at distance: ");
+          Serial.println(blipper->lastKnownWallDistance,1);
+        #endif
+      } else {
+        blipper->lastKnownWallDistance = blipper->getLeftUltrasonicRead();
+        #ifdef DEBUG
+          Serial.print("Wall on left at distance: ");
+          Serial.println(blipper->lastKnownWallDistance,1);
+        #endif
+      }
+      
       #ifdef DEBUG
         Serial.print(millis());
-        Serial.print("ROTATE_Found pole from distance: ");
+        Serial.print("-ROTATE_Found pole from position: ");
         Serial.print(blipper->lastKnownPolePosition,1);
         Serial.print(" with current reading: ");
-        Serial.println(blipper->getUltrasonicRead(),1);
+        Serial.println(blipper->getFrontUltrasonicRead(),1);
       #endif
       searching = false;
       result = true;
@@ -168,10 +168,6 @@ bool roverBrain::rotateUntilSeePole(double tolerance, int rotateDirection) {
   wheelDriver->driveStop();
 
   return result;
-  
-    
-
-  
 }
 
 bool roverBrain::driveToPoleHeadOn() {
@@ -181,6 +177,17 @@ bool roverBrain::driveToPoleHeadOn() {
 
   int poleFindingReturnValue;
 
+  #ifdef DEBUG
+    Serial.print("Driving with wall on the: ");
+    if (blipper->wallDirection == 1) {
+      Serial.println("left");
+    } else if (blipper->wallDirection == 2) {
+      Serial.println("right");
+    } else {
+      Serial.println("Something went wrong!");
+    }
+  #endif
+
   while (findingPole) {
     wheelDriver->driveForwards(90);
     delay(10);
@@ -189,33 +196,46 @@ bool roverBrain::driveToPoleHeadOn() {
   
     wheelDriver->driveStop();
   
-    if (poleFindingReturnValue) {
-      #ifdef DEBUG
-        Serial.print("DRIVE_TO_Found pole at distance: ");
-        Serial.println(blipper->lastReadingValue,10);
-      #endif
-      wheelDriver->rotateAtSpeed(40);
-      delay(50);
-      success = true;
-      findingPole = false;
-    } else {
+    if (poleFindingReturnValue == 0) {
       #ifdef DEBUG
         Serial.print(millis());
-        Serial.print("DRIVE_TO_Lost Pole at distance: ");
+        Serial.print("-DRIVE_TO_lost pole from front sensor at a distance: ");
+        Serial.print(blipper->lastKnownPolePosition,1);
+        Serial.print(" current reading: ");
+        Serial.println(blipper->getFrontUltrasonicRead(),1);
+      #endif
+      success = false;
+      findingPole = false;
+      //Based on distance to wall estimate turn direction
+    } else if (poleFindingReturnValue > 0) {
+      #ifdef DEBUG
+        Serial.print(millis());
+        Serial.print("-DRIVE_TO_Lost wall at distance: ");
         Serial.print(blipper->lastKnownPolePosition,10);
         Serial.print("  Current Reading: ");
-        Serial.println(blipper->getUltrasonicRead(),10);
+        Serial.println(blipper->getFrontUltrasonicRead(),10);
       #endif 
       
       delay(50);
 
-      //bool poleOrientationResult = orientToPole(); XXXChanging Orientation
-      bool poleOrientationResult = rotateUntilSeePole(20,90);
+      bool poleOrientationResult; 
+
+      if (poleFindingReturnValue == 1) {
+        poleOrientationResult = rotateUntilSeePole(20,-90);
+      } else {
+        poleOrientationResult = rotateUntilSeePole(20,90);
+      }
 
       if (!poleOrientationResult) {
         success = false;
         findingPole = false;
       }
+    } else {
+      #ifdef DEBUG
+        Serial.println("Found Pole");
+      #endif 
+      success = true;
+      findingPole = false;
     }
   }
 
@@ -235,62 +255,13 @@ bool roverBrain::driveToPoleHeadOn() {
   
 }
 
-bool roverBrain::orientToPole() {
-  int returnValue;
-  
-  blipper->rotateServo(90);
-  delay(500);
-
-  returnValue = blipper->findPolePosition(20);
-  delay(100);
-  
-  #ifdef DEBUG
-    Serial.print("Pole found at: ");
-    Serial.println(returnValue);
-  #endif
-
-  
-
-  if (returnValue != -1) {
-    wheelDriver->rotateDegrees(returnValue - 90);
-    delay(500);
-  
-    int returnValue = blipper->findPolePosition(20);
-    
-    #ifdef DEBUG
-      Serial.print("New Pole found at: ");
-      Serial.println(returnValue);
-    #endif
-
-    if (returnValue != 90) {
-      #ifdef DEBUG
-        Serial.println("Redoing orientation");
-      #endif
-      
-      orientToPole();
-      
-    } else {
-      #ifdef DEBUG
-        Serial.println("SUCCESS - ORIENTTOPOLE");
-      #endif
-      return true;
-    }
-    
-  } else {
-    #ifdef DEBUG
-      Serial.println("FAIL - ORIENTTOPOLE");
-    #endif
-    blipper->findPolePosition(50);
-  }
-}
-
 void roverBrain::redefinePoleDistance() {
   #ifdef DEBUG
     Serial.print("Redefining pole distance from: ");
     Serial.print(blipper->lastKnownPolePosition,10);
   #endif
-  blipper->lastKnownPolePosition = blipper->getAccurateUltrasonicRead();
-  blipper->lastReadingValue = blipper->lastKnownPolePosition;
+  blipper->lastKnownPolePosition = blipper->getFrontUltrasonicRead();
+  blipper->lastFrontReadingValue = blipper->lastKnownPolePosition;
 
   #ifdef DEBUG
     Serial.print("  to: ");

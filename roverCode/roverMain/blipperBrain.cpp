@@ -2,67 +2,111 @@
 
 
 
-blipperBrain::blipperBrain(Servo* inputServo)
+blipperBrain::blipperBrain()
 {
-  mainServo = inputServo;
 
-  pinMode(TRIG_PIN,OUTPUT);
-  pinMode(ECHO_PIN,INPUT);
+  pinMode(FRONT_TRIG_PIN, OUTPUT);
+  pinMode(FRONT_ECHO_PIN, INPUT);
+  pinMode(LEFT_TRIG_PIN, OUTPUT);
+  pinMode(LEFT_ECHO_PIN, INPUT);
+  pinMode(RIGHT_TRIG_PIN, OUTPUT);
+  pinMode(RIGHT_ECHO_PIN, INPUT);
 
-  lastReadingValue = 999;
+  lastFrontReadingValue = 999;
+  lastLeftReadingValue = 999;
+  lastRightReadingValue = 999;
 
-  
+  lastKnownPolePosition = 999;
+  lastKnownWallDistance = 999;
+
+
 }
 
 blipperBrain::~blipperBrain()
 {
-  delete mainServo;
 }
 
-void blipperBrain::rotateServo(int pos) {
-  mainServo->write(pos);
-}
-
-double blipperBrain::waitToSeePole(double wallDistance) {
-
-  double readingValue = 999;
-  double tolerance = 2;
+int blipperBrain::waitToSeePole() {
+  
+  double tolerance = 5;
   int windowLength = 20;
-  double ceilingValue = wallDistance - 30;
-  int numGoodReadings = 0;
+  double leftCeilingValue;
+  double rightCeilingValue;
+  int numLeftGoodReadings = 0;
+  int numRightGoodReadings = 0;
+  int result = 0;
 
+  leftCeilingValue = getLeftUltrasonicRead() - 30;
+  rightCeilingValue = getRightUltrasonicRead() - 30;
+
+  #ifdef DEBUG
+    Serial.print("Left wall distance: ");
+    Serial.print(leftCeilingValue, 1);
+    Serial.print(" Right wall distance: ");
+    Serial.print(rightCeilingValue, 1);
+  #endif
 
   bool searching = true;
 
   while (searching) {
-    readingValue = getUltrasonicRead();
 
-    if (readingValue < ceilingValue) {
-  
-      
-      
-      if (abs(readingValue - lastReadingValue) < tolerance) {
-        numGoodReadings++;
+    getAllUltrasonicRead();
+
+    if (currentLeftReadingValue < leftCeilingValue) {
+      if (abs(currentLeftReadingValue - lastLeftReadingValue) < tolerance) {
+        numLeftGoodReadings++;
       } else {
-        numGoodReadings = 0;
+        numLeftGoodReadings = 0;
       }
-      if (numGoodReadings >= windowLength) {
+      if (numLeftGoodReadings >= windowLength) {
+        #ifdef DEBUG
+          Serial.println("Found pole on left");
+        #endif
+        lastKnownPolePosition = currentLeftReadingValue;
+        result = 1;
         searching = false;
       }
     }
 
-    lastReadingValue = readingValue;
-    
+    if (currentRightReadingValue < rightCeilingValue) {
+      if (abs(currentRightReadingValue - lastRightReadingValue) < tolerance) {
+        numRightGoodReadings++;
+      } else {
+        numRightGoodReadings = 0;
+      }
+      if (numRightGoodReadings >= windowLength) {
+        #ifdef DEBUG
+          Serial.println("Found pole on right");
+        #endif
+        lastKnownPolePosition = currentRightReadingValue;
+        result = 2;
+        searching = false;
+      }
+    }
+
+    if (currentFrontReadingValue < 5) {
+      #ifdef DEBUG
+        Serial.println("Hit wall on front");
+      #endif
+      lastKnownPolePosition = currentFrontReadingValue;
+      result = 0;
+      searching = false;
+    }
+
+    lastLeftReadingValue = currentLeftReadingValue;
+    lastRightReadingValue = currentRightReadingValue;
+
   }
 
-  lastKnownPolePosition = readingValue;
-  return readingValue;
   
+  wallDirection = result;
+  return result;
+
 }
 
 
 
-double blipperBrain::getUltrasonicRead() {
+double blipperBrain::getUltrasonicRead(int TRIG_PIN, int ECHO_PIN) {
 
   unsigned long t1;
   unsigned long t2;
@@ -70,16 +114,12 @@ double blipperBrain::getUltrasonicRead() {
   unsigned long pulse_width;
   double cm;
 
-  delay(15);
-
   digitalWrite(TRIG_PIN, HIGH);
   delayMicroseconds(10);
   digitalWrite(TRIG_PIN, LOW);
 
-  
-
   pulseTimer = 0;
-    
+
   while ( digitalRead(ECHO_PIN) == 0 && pulseTimer < 50000 ) {
     pulseTimer++;
   }
@@ -96,133 +136,79 @@ double blipperBrain::getUltrasonicRead() {
 
   if (cm < 0.01) {
     cm = 999;
-  }  
-  return cm;  
+  }
+  return cm;
 }
 
-bool blipperBrain::driveTowardsPole() {
+int blipperBrain::driveTowardsPole() {
 
-  double readingValue;
-  double tolerance = 10;
+  double frontReadingValue;
+  double sideReadingValue;
+  double lastSideReadingValue = 999;
+  double poleTolerance = 10;
+  double wallTolerance = 10;
   int windowLength = 3;
-  int numBadReadings = 0;
+  int numFrontBadReadings = 0;
+  int numSideBadReadings = 0;
+  int sideTrigPin;
+  int sideEchoPin;
 
-  readingValue = lastKnownPolePosition;
-
-  while (readingValue > 7) {
-    readingValue = getUltrasonicRead();
-
-    
-    if (abs(readingValue - lastKnownPolePosition) > tolerance) {
-      if (abs(readingValue - lastReadingValue) <= tolerance) {
-        numBadReadings++;
-      }
-    } else {
-      numBadReadings = 0;
-      lastKnownPolePosition = readingValue;
-    
-      
-    }
-  
-    if (numBadReadings >= windowLength) {
-      //Serial.print("Lost pole at: ");
-      //Serial.println(readingValue,10);
-      return false;
-    }
-
-    lastReadingValue = readingValue;
-  }
-
-  return true;
-}
-
-
-
-int blipperBrain::findPolePosition(double tolerance) {
-
-  double readingValue = 999;
-  int windowLength = 10;
-  int numGoodReadings = 0;
-
-  unsigned int numReadings = 0;
-
-  int servoPosition = 90;
-  int degToSearch = 60;
-
-  int lowerDegLimit = 90 - degToSearch;
-  int upperDegLimit = 90 + degToSearch;
-
-
-  bool searching = true;
-
-  bool searchPhase1 = true;
-
-  Serial.print("Finding pole at last known position: ");
-  Serial.println(lastKnownPolePosition,10);
-
-  while (searching) {
-
-    readingValue = getUltrasonicRead();
-
-    if (abs(readingValue - lastKnownPolePosition) < tolerance) {
-      numGoodReadings++;
-    } else {
-      numGoodReadings = 0;
-    }
-    if (numGoodReadings >= windowLength) {
-      searching = false;
-    }
-    
-    if (searchPhase1) {
-      
-      servoPosition--;
-  
-      if (servoPosition < lowerDegLimit) {
-        searchPhase1 = false;
-        rotateServo(90);
-        servoPosition = 90;
-        numReadings = 0;
-        delay(500);
-      }
-    } else {
-  
-      servoPosition++;
-
-      if (servoPosition > upperDegLimit) {
-        rotateServo(90);
-        delay(1000);
-        return -1;
-      }
-    }
-
-    rotateServo(servoPosition);
-    numReadings++;
-  }
-
-
-  lastReadingValue = readingValue;
-  rotateServo(90);
-  if (numReadings == windowLength) {
-    return 90;
+  if (wallDirection == 1) {
+    sideTrigPin = LEFT_TRIG_PIN;
+    sideEchoPin = LEFT_ECHO_PIN;
   } else {
-    return servoPosition;
-  }
-}
-
-double blipperBrain::getAccurateUltrasonicRead() {
-
-  double total = 0;
-  int numReadings = 20;
-
-  for (int i = 0; i < numReadings; i++) {
-    total = total + getUltrasonicRead();
+    sideTrigPin = RIGHT_TRIG_PIN;
+    sideEchoPin = RIGHT_ECHO_PIN;
   }
 
-  total = total / numReadings;
+  frontReadingValue = lastKnownPolePosition;
 
-  return total;
+  while (frontReadingValue > 7) {
+    frontReadingValue = getFrontUltrasonicRead();
+    sideReadingValue = getUltrasonicRead(sideTrigPin,sideEchoPin);
+    
+    if (abs(frontReadingValue - lastKnownPolePosition) > poleTolerance) {
+      if (abs(frontReadingValue - lastFrontReadingValue) <= poleTolerance) {
+        numFrontBadReadings++;
+      }
+    } else {
+      numFrontBadReadings = 0;
+      lastKnownPolePosition = frontReadingValue;
+    }
 
+    if (abs(sideReadingValue - lastKnownWallDistance) > wallTolerance) {
+      if (abs(sideReadingValue - lastSideReadingValue) <= wallTolerance) {
+        numSideBadReadings++;
+      }
+    } else {
+      numSideBadReadings = 0;
+    }
 
-  
+    if (numFrontBadReadings >= windowLength) {
+      return 0;
+    }
+    
+    if (numSideBadReadings >= windowLength) {
+      if (sideReadingValue > lastKnownWallDistance) {
+        if (wallDirection == 1) {
+          return 1;
+        } else {
+          return 2;
+        }
+      } else {
+        if (wallDirection == 1) {
+          return 2;
+        } else {
+          return 1;
+        }
+      }
+    }
+
+    lastFrontReadingValue = frontReadingValue;
+    lastSideReadingValue = sideReadingValue;
+  }
+
+  return -1;
 }
+
 

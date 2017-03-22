@@ -132,7 +132,7 @@ void testingAlgorithms::waitForInputToStart() {
 }
 
 void testingAlgorithms::waitForUltrasonicInputToStart(roverBrain* rover) {
-  while (rover->blipper->getUltrasonicRead() > 10);
+  while (rover->blipper->getFrontUltrasonicRead() > 10);
 }
 
 void testingAlgorithms::testDriveByPole(blipperBrain* blipper, drivingBrain* wheelDriver) {
@@ -145,13 +145,12 @@ void testingAlgorithms::testDriveByPole(blipperBrain* blipper, drivingBrain* whe
   
   Serial.println("Starting Test");
   
-  blipper->rotateServo(175);
   
   delay(500);
   
   wheelDriver->driveForwards(90);
   
-  returnValue = blipper->waitToSeePole(200.0);
+  returnValue = blipper->waitToSeePole();
 
   delay(1000);
   
@@ -161,13 +160,12 @@ void testingAlgorithms::testDriveByPole(blipperBrain* blipper, drivingBrain* whe
   
   wheelDriver->rotateDegrees(90);
   
-  blipper->rotateServo(90);
   
   delay(500);
   
   Serial.print("Evaluated Pole Distance: ");
   
-  double difference = blipper->getUltrasonicRead();
+  double difference = blipper->getFrontUltrasonicRead();
   
   Serial.println(difference, 10);
 
@@ -192,14 +190,14 @@ void testingAlgorithms::getBlipperDriveByArray(blipperBrain* blipper, drivingBra
   while (Serial.available() <= 0);
   delayAmount = Serial.parseInt();
 
-  blipper->rotateServo(175);
+
   
   delay(500);
   
   wheelDriver->driveForwards(90);
 
   while(delayAmount > 0) {
-    Serial.println(blipper->getUltrasonicRead(),1);
+    Serial.println(blipper->getFrontUltrasonicRead(),1);
     delayAmount--;
   }
 
@@ -216,17 +214,16 @@ void testingAlgorithms::getBlipperRotateArray(blipperBrain* blipper, drivingBrai
   while (Serial.available() <= 0);
   delayAmount = Serial.parseInt();
 
-  blipper->rotateServo(130);
+
 
   delay(500);
   
   for (int i = 0; i < delayAmount; i++) {
-    blipper->rotateServo(130-i);
-    Serial.println(blipper->getUltrasonicRead(),1);
+    Serial.println(blipper->getFrontUltrasonicRead(),1);
     delay(40);
   }
 
-  blipper->rotateServo(90);
+
 
   
 }
@@ -239,7 +236,7 @@ void testingAlgorithms::testDriveToPole(blipperBrain* blipper, drivingBrain* whe
   double inputDistance;
 
  Serial.print("Initial Distance: ");
- Serial.println(blipper->getUltrasonicRead(),10);
+ Serial.println(blipper->getFrontUltrasonicRead(),10);
  
  Serial.println("Type in pole distance to start driving * 100");
  while (Serial.available() <= 0);
@@ -250,8 +247,8 @@ void testingAlgorithms::testDriveToPole(blipperBrain* blipper, drivingBrain* whe
   
   Serial.println("Starting Test");
   
-  blipper->rotateServo(90);
-  blipper->lastReadingValue = inputDistance;
+
+  blipper->lastFrontReadingValue = inputDistance;
   blipper->lastKnownPolePosition = inputDistance;
   
   delay(500);
@@ -265,10 +262,10 @@ void testingAlgorithms::testDriveToPole(blipperBrain* blipper, drivingBrain* whe
 
   if (returnValue) {
     Serial.print("Found pole at distance: ");
-    Serial.println(blipper->lastReadingValue,10);
+    Serial.println(blipper->lastFrontReadingValue,10);
   } else {
     Serial.print("Lost Pole at distance: ");
-    Serial.println(blipper->lastReadingValue,10);
+    Serial.println(blipper->lastFrontReadingValue,10);
     delay(100);
     
   } 
@@ -284,7 +281,7 @@ void testingAlgorithms::testBlipperFindPolePosition(roverBrain* rover) {
   double inputDistance;
 
    Serial.print("Initial Distance: ");
-   Serial.println(rover->blipper->getUltrasonicRead(),10);
+   Serial.println(rover->blipper->getFrontUltrasonicRead(),10);
    
    Serial.println("Type in pole distance to search * 100");
    while (Serial.available() <= 0);
@@ -295,11 +292,10 @@ void testingAlgorithms::testBlipperFindPolePosition(roverBrain* rover) {
   
   Serial.println("Starting Test");
 
-  rover->blipper->rotateServo(90);
-  rover->blipper->lastReadingValue = inputDistance;
+
+  rover->blipper->lastFrontReadingValue = inputDistance;
   rover->blipper->lastKnownPolePosition = inputDistance;
   
-  rover->orientToPole();
 }
 
 void testingAlgorithms::testLocatePoleHeadOn(roverBrain* rover) {
@@ -313,7 +309,7 @@ void testingAlgorithms::testLocatePoleHeadOn(roverBrain* rover) {
   double inputDistance;
 
   Serial.print("Initial Distance: ");
-  Serial.println(rover->blipper->getUltrasonicRead(),10);
+  Serial.println(rover->blipper->getFrontUltrasonicRead(),10);
    
   Serial.println("Type in pole distance to start locating * 100");
   while (Serial.available() <= 0);
@@ -324,8 +320,7 @@ void testingAlgorithms::testLocatePoleHeadOn(roverBrain* rover) {
   
   Serial.println("Starting Test");
 
-  rover->blipper->rotateServo(90);
-  rover->blipper->lastReadingValue = inputDistance;
+  rover->blipper->lastFrontReadingValue = inputDistance;
   rover->blipper->lastKnownPolePosition = inputDistance;
   
   delay(500);
@@ -344,7 +339,7 @@ void testingAlgorithms::rotateUntilSeePole(roverBrain* rover) {
   double inputDistance;
 
   Serial.print("Initial Distance: ");
-  Serial.println(rover->blipper->getUltrasonicRead(),10);
+  Serial.println(rover->blipper->getFrontUltrasonicRead(),10);
    
   Serial.println("Type in pole distance to start rotating * 100");
   while (Serial.available() <= 0);
@@ -353,7 +348,7 @@ void testingAlgorithms::rotateUntilSeePole(roverBrain* rover) {
 
   Serial.println(inputDistance,10);
 
-  rover->blipper->lastReadingValue = inputDistance;
+  rover->blipper->lastFrontReadingValue = inputDistance;
   rover->blipper->lastKnownPolePosition = inputDistance;
   
   delay(500);
