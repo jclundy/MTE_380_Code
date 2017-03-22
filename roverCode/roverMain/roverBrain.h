@@ -9,10 +9,6 @@
 #include "drivingBrain.h"
 #include "blipperBrain.h"
 
-#define DEBUG
-#define LOOKLEFT
-//#define LOOKRIGHT
-
 #define POLEDRIVEDELAYSLOPE 0
 #define POLEDRIVEDELAYB 1400
 
@@ -28,8 +24,7 @@ public:
 
   bool driveToPole();
 
-  void driveByPole();
-  bool orientToPole();
+  int driveByPole();
   void redefinePoleDistance();
   bool driveToPoleHeadOn();
 
