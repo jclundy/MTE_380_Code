@@ -1,17 +1,9 @@
 #include <Servo.h>
-#include "drivingBrain.h"
-
-#define INPUT_PIN 4
-#define OUTPUT_PIN 3
-#define LEFT_MOTOR_PIN 10
-#define RIGHT_MOTOR_PIN 11
+#define INPUT_PIN A0
+#define OUTPUT_PIN A1
 
 int isHigh = false;
 int pinValue = HIGH;
-
-Servo servoL;
-Servo servoR;
-drivingBrain* wheelDriver;
 
 void setup() {
   pinMode(INPUT_PIN, INPUT);
