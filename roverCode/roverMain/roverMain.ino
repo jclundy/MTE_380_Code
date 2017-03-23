@@ -84,10 +84,15 @@ void loweringLoop(){
 #ifdef DEBUG
   Serial.println("state: WAITING_FOR_LIFT_COM");
 #endif
-  while (digitalRead(GO_AHEAD_PIN))
-  {
+  startTimer();
   //rover is waiting for communications line to go low
+  while (readTimer() < WAITING_FOR_LIFT_COM_MAX_WINDOW)
+  {
+    if(readTimer() > WAITING_FOR_LIFT_COM_MIN_WINDOW && digitalRead(GO_AHEAD_PIN)) {
+      break;
+    }
   }
+  delay(WAITING_FOR_LIFT_COM_MIN_WINDOW);
   
 #ifdef DEBUG
   Serial.println("state: DRIVING_FORWARD");
@@ -95,7 +100,7 @@ void loweringLoop(){
   startTimer();
   spooler->unspool();
   rover->wheelDriver->driveForwards(MOTOR_POWER_LOWERING);
-  while (readTimer() < DRIVING_FORWARD_WINDOW)
+  while (readTimer() < DRIVING_FORWARD_MAX_WINDOW)
   {
 #ifdef DEBUG
     Serial.println("DRIVING_FORWARD!!!!!");
@@ -108,7 +113,7 @@ void loweringLoop(){
   startTimer();
   spooler->unspool();
   rover->wheelDriver->driveForwards(MOTOR_POWER_LOWERING);
-  while (readTimer() < DRIVING_DOWN_SLOPE_WINDOW)
+  while (readTimer() < DRIVING_DOWN_SLOPE_MAX_WINDOW)
   {
 #ifdef DEBUG
     Serial.println("DRIVING_DOWN_SLOPE!!!!!");
@@ -121,7 +126,7 @@ void loweringLoop(){
   startTimer();
   spooler->unspool();
   rover->wheelDriver->driveForwards(MOTOR_POWER_LOWERING);
-  while (readTimer() < VERTICAL_LOWERING_WINDOW)
+  while (readTimer() < VERTICAL_LOWERING_MAX_WINDOW)
   {
 #ifdef DEBUG
     Serial.println("VERTICAL_LOWERING!!!!!");
@@ -134,7 +139,7 @@ void loweringLoop(){
   startTimer();
   spooler->unspool();
   rover->wheelDriver->driveForwards(MOTOR_POWER_LOWERING);
-  while (readTimer() < TOUCHING_DOWN_WINDOW)
+  while (readTimer() < TOUCHING_DOWN_MAX_WINDOW)
   {
 #ifdef DEBUG
     Serial.println("TOUCHING_DOWN!!!!!");
