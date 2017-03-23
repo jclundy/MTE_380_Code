@@ -7,11 +7,13 @@
 #define FRONT_RIGHT_MOTOR_PIN 10
 #define BACK_LEFT_MOTOR_PIN 3
 #define BACK_RIGHT_MOTOR_PIN 9
-#define WALL_DIRECTION_PIN A0
-#define GO_AHEAD_PIN A1
+#define WALL_DIRECTION_PIN A1
+#define SPOOL_UP_BUTTON_PIN A2
+#define GO_AHEAD_PIN A3
+
 #define SPOOL_PIN 6
 #define MOTOR_POWER_LOWERING 25
-#define SPOOL_UP_BUTTON_PIN A2
+
 
 roverBrain* rover;
 spool* spooler;
@@ -48,7 +50,6 @@ void setup() {
   
 
   //Set wall direction
-  /*
   pinMode(WALL_DIRECTION_PIN,INPUT);
   int wallDirectionReadValue = digitalRead(WALL_DIRECTION_PIN);
   if (wallDirectionReadValue == HIGH) {
@@ -56,7 +57,7 @@ void setup() {
   } else {
     rover->blipper->setWallSide(2);
   }
-  */
+
 
   rover->blipper->setWallSide(2);
 
