@@ -22,10 +22,10 @@ bool roverBrain::driveToPole() {
   driveByPoleResult = driveByPole();
 
   if (driveByPoleResult == 1) {
-    roverResult = rotateUntilSeePole(poleRotationToleranceSize,-90,DEG_90_TURN_DELAY + 2000);
+    roverResult = rotateUntilSeePole(poleRotationToleranceSize,-90,DEG_90_TURN_DELAY + 2000,true);
     getInitialWallDistance(-90);
   } else if (driveByPoleResult == 2) {
-    roverResult = rotateUntilSeePole(poleRotationToleranceSize,90,DEG_90_TURN_DELAY + 2000);
+    roverResult = rotateUntilSeePole(poleRotationToleranceSize,90,DEG_90_TURN_DELAY + 2000,true);
     getInitialWallDistance(90);
   }
   else {
@@ -67,7 +67,7 @@ int roverBrain::driveByPole() {
   #endif
 
   wheelDriver->driveForwards(90);
-  blipperReturnValue = blipper->waitToSeePole();
+  blipperReturnValue = blipper->waitToSeePoleDirection();
 
   if (blipperReturnValue != 0) {
     double delayAmountDouble = blipper->lastKnownPolePosition * POLEDRIVEDELAYSLOPE + POLEDRIVEDELAYB;
@@ -108,15 +108,18 @@ void roverBrain::getInitialWallDistance(int rotateDirection) {
     }
 }
 
-bool roverBrain::rotateUntilSeePole(double tolerance, int rotateDirection, int timeOutLength) {
+bool roverBrain::rotateUntilSeePole(double tolerance, int rotateDirection, int timeOutLength, bool is90DegTurn) {
 
   double readingValue = 999;
-  int windowLength = 8;
+  int windowLength = 4;
   int numGoodReadings = 0;
 
   int startReadingTime = 50;
 
+  int closeReadingDistance = 25;
+
   unsigned long startTime;
+  unsigned long currentTime;
 
   bool searching = true;
   bool result;
@@ -130,28 +133,55 @@ bool roverBrain::rotateUntilSeePole(double tolerance, int rotateDirection, int t
   }
 
   #ifdef DEBUG
-    Serial.print("Starting to rotate to pole @:");
-    Serial.println(blipper->lastKnownPolePosition,1);
+    if (readingValue < (blipper->lastKnownPolePosition + tolerance)) {
+      Serial.print("Starting to rotate to pole CLOSE @D:");
+    } else {
+      Serial.print("Starting to rotate to pole @D:");
+    }
+    
+    Serial.print(blipper->lastKnownPolePosition,1);
+    Serial.print(" @TOL:");
+    Serial.print(tolerance,1);
+    Serial.print(" @TIM:");
+    Serial.println(timeOutLength);
   #endif
 
   wheelDriver->rotateAtSpeed(motorPower);
 
-  
+  if (is90DegTurn) {
+    #ifdef DEBUG
+      Serial.println("rotating with a delay");
+    #endif
+    delay(DEG_90_TURN_DELAY);
+  }
 
   startTime = millis();
 
   while (searching) {
-  
+
+    currentTime = millis();
     readingValue = blipper->getFrontUltrasonicRead();
 
-    if (abs(readingValue - blipper->lastKnownPolePosition) < tolerance) {
-      numGoodReadings++;
+    if (readingValue < (blipper->lastKnownPolePosition + tolerance)) {
+        if (readingValue < (blipper->lastKnownPolePosition + tolerance)) {
+        numGoodReadings++;
+      } else {
+        numGoodReadings = 0;
+      }
     } else {
-      numGoodReadings = 0;
+      if (abs(readingValue - blipper->lastKnownPolePosition) < tolerance) {
+        numGoodReadings++;
+      } else {
+        numGoodReadings = 0;
+      }
     }
+    
+    
+
+    
     if (numGoodReadings >= windowLength) {
 
-      delay(50);
+      delay(100);
       wheelDriver->driveStop();
       
 
@@ -164,12 +194,17 @@ bool roverBrain::rotateUntilSeePole(double tolerance, int rotateDirection, int t
         Serial.print(" with current reading: ");
         Serial.println(readDistanceToPole,1);
       #endif
-      blipper->lastKnownPolePosition = readDistanceToPole;
+
+      if (abs(readDistanceToPole - blipper->lastKnownPolePosition) < 15) {
+        blipper->lastKnownPolePosition = readDistanceToPole;
+      }
+      
+      
       searching = false;
       result = true;
     }
 
-    if ((millis() - startTime) > (timeOutLength)) {
+    if ((currentTime - startTime) > (timeOutLength)) {
 
       #ifdef DEBUG
         Serial.println("FAIL - ROTATEUNTILPOLESEEN : for going too long overtime");
@@ -299,26 +334,24 @@ bool roverBrain::findLostPole(int initialDirection) {
     #endif
   }
 
-  while (!rotateUntilSeePole(toleranceVal,directionModifier,timeOutDelay)) {
+  while (!rotateUntilSeePole(toleranceVal,directionModifier,timeOutDelay,false)) {
     directionModifier = directionModifier * -1;
     timeOutDelay = timeOutDelay + 300;
-
+    toleranceVal += 5;
+    
     if (directionModifier == 1) {
       timeOutDelay -= 100;
     } else {
       timeOutDelay += 100;
     }
     
-    if (timeOutDelay  > 2000) {
-      toleranceVal = 50;
-    }
-
-    if (timeOutDelay > 2000 && toleranceVal > 40) {
+    if (toleranceVal > 70) {
       return false;
     }
-    delay(1000);
-  }
 
+    
+    delay(100);
+  }
   #ifdef DEBUG
     Serial.println("Located Lost Pole");
   #endif

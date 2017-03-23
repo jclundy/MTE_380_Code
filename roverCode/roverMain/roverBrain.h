@@ -28,7 +28,7 @@ public:
   void redefinePoleDistance();
   bool driveToPoleHeadOn();
 
-  bool rotateUntilSeePole(double tolerance, int rotateDirection, int timeOutLength);
+  bool rotateUntilSeePole(double tolerance, int rotateDirection, int timeOutLength, bool isTurning90DEG);
 
   bool findLostPole(int initialDirection);
 

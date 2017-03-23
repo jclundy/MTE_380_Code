@@ -40,11 +40,11 @@ void testingAlgorithms::findRotationValue(drivingBrain* wheelDriver) {
 
   if (Serial.available() > 0) {
       incomingInt = Serial.parseInt();
-      wheelDriver->rotateAtSpeed(90);
+      wheelDriver->rotateAtSpeed(30);
       delay(incomingInt);
       wheelDriver->driveStop();
       delay(1000);
-      wheelDriver->rotateAtSpeed(-90);
+      wheelDriver->rotateAtSpeed(-30);
       delay(incomingInt);
       wheelDriver->driveStop();
     }
@@ -355,7 +355,7 @@ void testingAlgorithms::rotateUntilSeePole(roverBrain* rover) {
   
   Serial.println("Starting Test");
   
-  success = rover->rotateUntilSeePole(20,90,2000);
+  success = rover->rotateUntilSeePole(20,90,2000,true);
 
   if (success) {
     Serial.println("Success!");

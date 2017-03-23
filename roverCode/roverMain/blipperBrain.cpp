@@ -56,8 +56,12 @@ int blipperBrain::waitToSeePole() {
   int numRightGoodReadings = 0;
   int result = 0;
 
-  leftCeilingValue = getLeftUltrasonicRead() - 30;
-  rightCeilingValue = getRightUltrasonicRead() - 30;
+  leftCeilingValue = getLeftUltrasonicRead() - 50;
+  rightCeilingValue = getRightUltrasonicRead() - 100;
+
+  if (rightCeilingValue < 80) {
+    rightCeilingValue = 80;
+  }
 
   #ifdef DEBUG
     Serial.print("Left wall distance: ");
@@ -69,9 +73,9 @@ int blipperBrain::waitToSeePole() {
   bool searching = true;
 
   while (searching) {
-
+    delay(20);
     getAllUltrasonicRead();
-    Serial.println(currentLeftReadingValue,1);
+    Serial.println(currentRightReadingValue,1);
 
     if (currentLeftReadingValue < leftCeilingValue) {
       if (abs(currentLeftReadingValue - lastLeftReadingValue) < tolerance) {
@@ -128,14 +132,28 @@ int blipperBrain::waitToSeePole() {
 int blipperBrain::waitToSeePoleDirection() {
   
   double tolerance = 5;
-  int windowLength = 10;
+  int windowLength = 6;
   double sideCeilingValue;
   int numSideGoodReadings = 0;
   int result = 0;
   double currentSideReadingValue = 999;
   double lastSideReadingValue = 999;
 
-  sideCeilingValue = getSideUltrasonicRead() - 30;
+
+  getSideUltrasonicRead();
+  getSideUltrasonicRead();
+  getSideUltrasonicRead();
+  delay(25);
+  sideCeilingValue = getSideUltrasonicRead() - 40;
+
+  #ifdef DEBUG
+    Serial.print("Side wall ceiling value initial: ");
+    Serial.println(sideCeilingValue+40, 1);
+  #endif
+  
+  if (sideCeilingValue < 90) {
+    sideCeilingValue = 90;
+  }
 
   #ifdef DEBUG
     Serial.print("Side wall ceiling value: ");
@@ -146,7 +164,7 @@ int blipperBrain::waitToSeePoleDirection() {
 
   while (searching) {
 
-    delay(15);
+    delay(25);
     currentSideReadingValue = getUltrasonicRead(side_trig_pin, side_echo_pin);
     currentFrontReadingValue = getUltrasonicRead(FRONT_TRIG_PIN,FRONT_ECHO_PIN);
     Serial.println(currentSideReadingValue,1);
@@ -290,7 +308,7 @@ int blipperBrain::driveTowardsPole() {
       }
     }
 
-    if (frontReadingValue < 10) {
+    if (frontReadingValue < 7) {
       numCloseReadings++;
     }
 

@@ -35,6 +35,7 @@ void setup() {
   rover = new roverBrain(servoFL_p, servoFR_p, servoBL_p, servoBR_p);
 
   //Set wall direction
+  /*
   pinMode(WALL_DIRECTION_PIN,INPUT);
   int wallDirectionReadValue = digitalRead(WALL_DIRECTION_PIN);
   if (wallDirectionReadValue == HIGH) {
@@ -42,6 +43,9 @@ void setup() {
   } else {
     rover->blipper->setWallSide(2);
   }
+  */
+
+  rover->blipper->setWallSide(1);
 
   #ifdef DEBUG
     Serial.println("Initalized");
@@ -58,24 +62,29 @@ void loop() {
   //mainTest->testDrivingTrim(rover->wheelDriver);
   //mainTest->testDrivePower(rover->wheelDriver);
   //mainTest->testRotationDegrees(rover->wheelDriver);
+  //mainTest->findRotationValue(rover->wheelDriver);
   //mainTest->getBlipperDriveByArray(rover->blipper, rover->wheelDriver);
   //mainTest->getBlipperRotateArray(rover->blipper, rover->wheelDriver);
   //mainTest->testDriveByPole(blipper, wheelDriver);
   //mainTest->testDriveToPole(blipper, wheelDriver);
   //mainTest->testBlipperFindPolePosition(rover);
   //mainTest->testLocatePoleHeadOn(rover);
-
+  
 
   //testingAlgorithms::waitForUltrasonicInputToStart(rover);
-  Serial.println(rover->blipper->getFrontUltrasonicRead(),1);
-  testingAlgorithms::waitForInputToStart();
-  //rover->driveToPole();
-  //rover->blipper->setWallSide(1);
   
-  rover->blipper->lastKnownPolePosition = 67;
-  rover->blipper->lastKnownWallDistance = 100;
+  testingAlgorithms::waitForInputToStart();
+  delay(3000);
+  rover->driveToPole();
+  
+  //rover->blipper->setWallSide(1);
+  //rover->driveByPole();
+
+  //Serial.println(rover->blipper->getFrontUltrasonicRead(),1);
+  //rover->blipper->lastKnownPolePosition = 67;
+  //rover->blipper->lastKnownWallDistance = 100;
   //rover->rotateUntilSeePole(15,-90,2000);
-  rover->driveToPoleHeadOn();
+  //rover->driveToPoleHeadOn();
 
   
 
