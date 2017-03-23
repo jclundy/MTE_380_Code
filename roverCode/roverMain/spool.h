@@ -33,7 +33,7 @@
 // spool servo values
 #define RESTING_uS 1525
 #define UNSPOOL_SLOW_uS 1550
-#define UNSPOOL_FAST_us 1575
+#define UNSPOOL_FAST_us 1555
 #define TAKE_IN_FAST_uS 1400
 #define TAKE_IN_SLOW_uS 1500
 

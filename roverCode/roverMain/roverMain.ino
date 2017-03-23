@@ -161,52 +161,6 @@ unsigned long readTimer(){
 }
 
 void loop() {
-
-
-  testingAlgorithms* mainTest = new testingAlgorithms();
-  //mainTest->frontLeftServoTestMicroseconds(rover->wheelDriver);
-  //mainTest->testDrivingTrim(rover->wheelDriver);
-  //mainTest->testDrivePower(rover->wheelDriver);
-  //mainTest->testRotationDegrees(rover->wheelDriver);
-  //mainTest->findRotationValue(rover->wheelDriver);
-  //mainTest->getBlipperDriveByArray(rover->blipper, rover->wheelDriver);
-  //mainTest->getBlipperRotateArray(rover->blipper, rover->wheelDriver);
-  //mainTest->testDriveByPole(blipper, wheelDriver);
-  //mainTest->testDriveToPole(blipper, wheelDriver);
-  //mainTest->testBlipperFindPolePosition(rover);
-  //mainTest->testLocatePoleHeadOn(rover);
-  
-
-  //testingAlgorithms::waitForUltrasonicInputToStart(rover);
-  
-  //testingAlgorithms::waitForInputToStart();
   loweringLoop();
-//  // take in rope
-//  spooler->takeInSlow();
-//  
-//  testingAlgorithms::waitForInputToStart();
-//  spooler->stopRotating();
-//  
-//  testingAlgorithms::waitForInputToStart();
-//  spooler->unspool();
-//  rover->wheelDriver->driveForwards(MOTOR_POWER_LOWERING);
-//  
-//  delay(3000);
-//  testingAlgorithms::waitForInputToStart();
-//  spooler->stopRotating();
-//  rover->wheelDriver->driveStop();
-  //rover->driveToPole();
-  
-  //rover->blipper->setWallSide(1);
-  //rover->driveByPole();
-
-  //Serial.println(rover->blipper->getFrontUltrasonicRead(),1);
-  //rover->blipper->lastKnownPolePosition = 67;
-  //rover->blipper->lastKnownWallDistance = 100;
-  //rover->rotateUntilSeePole(15,-90,2000);
-  //rover->driveToPoleHeadOn();
-
-  
-
-
+  rover->driveToPole();
 }
