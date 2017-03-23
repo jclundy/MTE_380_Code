@@ -1,6 +1,8 @@
 #include <Servo.h>
 #include "lift_params.h"
 
+#define DEBUG
+
 Servo servoLeft;
 Servo servoRight;
 Servo servoLatch;
@@ -17,7 +19,22 @@ int right_switch = 0;
 bool leftmotorON = false;
 bool rightmotorON = false;
 
-double trim = 0.5;
+double trim = 0.45;
+
+void SetSpeeds()
+{
+  SERVO_LEFT_GO_ms = SERVO_LEFT_STOP_ms + (1000.0*trim);
+  SERVO_RIGHT_GO_ms = SERVO_RIGHT_STOP_ms - (1000.0*(1-trim));
+
+  SERVO_LEFT_SLOW_FORWARD_ms = SERVO_LEFT_STOP_ms + (300.0*trim);
+  SERVO_RIGHT_SLOW_FORWARD_ms = SERVO_RIGHT_STOP_ms - (300.0*(1-trim));
+
+  SERVO_LEFT_SLOW_REVERSE_ms = SERVO_RIGHT_SLOW_FORWARD_ms;
+  SERVO_RIGHT_SLOW_REVERSE_ms = SERVO_LEFT_SLOW_FORWARD_ms;
+
+  SERVO_LEFT_REVERSE_ms = SERVO_RIGHT_GO_ms;
+  SERVO_RIGHT_REVERSE_ms = SERVO_LEFT_GO_ms;
+}
 
 void TestDrivingTrim() {
   int incomingInt = 0;
@@ -47,14 +64,7 @@ void TestDrivingTrim() {
 
       trim = incomingValue;
 
-      SERVO_LEFT_GO_ms = SERVO_LEFT_STOP_ms + (1000.0*trim);
-      SERVO_RIGHT_GO_ms = SERVO_RIGHT_STOP_ms - (1000.0*(1-trim));
-
-      SERVO_LEFT_SLOW_FORWARD_ms = SERVO_LEFT_STOP_ms + (200.0*trim);
-      SERVO_RIGHT_SLOW_FORWARD_ms = SERVO_RIGHT_STOP_ms - (200.0*(1-trim));
-
-      SERVO_LEFT_SLOW_REVERSE_ms = SERVO_RIGHT_SLOW_FORWARD_ms;
-      SERVO_RIGHT_SLOW_REVERSE_ms = SERVO_LEFT_SLOW_FORWARD_ms;
+      SetSpeeds();
 
       Serial.print("Left servo go: ");
       Serial.println(SERVO_LEFT_GO_ms);
@@ -66,10 +76,10 @@ void TestDrivingTrim() {
       Serial.print("Right servo slow: ");
       Serial.println(SERVO_RIGHT_SLOW_FORWARD_ms);
 
-      servoLeft.writeMicroseconds(SERVO_LEFT_SLOW_FORWARD_ms);
-      servoRight.writeMicroseconds(SERVO_RIGHT_SLOW_FORWARD_ms);
+      servoLeft.writeMicroseconds(SERVO_LEFT_GO_ms);
+      servoRight.writeMicroseconds(SERVO_RIGHT_GO_ms);
     
-      delay(2000);
+      delay(4000);
 
       servoLeft.writeMicroseconds(SERVO_LEFT_STOP_ms);
       servoRight.writeMicroseconds(SERVO_RIGHT_STOP_ms);
@@ -117,15 +127,21 @@ double GetUltrasonicVal() {
 }
 
 inline void Print(String msg){
+  #ifdef DEBUG
   Serial.println(msg);
+  #endif
 }
 
 inline void Print(int val){
+  #ifdef DEBUG
   Serial.println(val);
+  #endif
 }
 
 inline void Print(double val){
+  #ifdef DEBUG
   Serial.println(val);
+  #endif
 }
 
 void Reset()
@@ -184,19 +200,7 @@ void setup() {
   Serial.begin(9600);
   
   TestDrivingTrim();
-
-  SERVO_LEFT_GO_ms = SERVO_LEFT_STOP_ms + (1000.0*trim);
-  SERVO_RIGHT_GO_ms = SERVO_RIGHT_STOP_ms - (1000.0*(1-trim));
-
-  SERVO_LEFT_SLOW_FORWARD_ms = SERVO_LEFT_STOP_ms + (300.0*trim);
-  SERVO_RIGHT_SLOW_FORWARD_ms = SERVO_RIGHT_STOP_ms - (300.0*(1-trim));
-
-  SERVO_LEFT_SLOW_REVERSE_ms = SERVO_RIGHT_SLOW_FORWARD_ms;
-  SERVO_RIGHT_SLOW_REVERSE_ms = SERVO_LEFT_SLOW_FORWARD_ms;
-
-  SERVO_LEFT_REVERSE_ms = SERVO_RIGHT_GO_ms;
-  SERVO_RIGHT_REVERSE_ms = SERVO_LEFT_GO_ms;
-  
+  SetSpeeds();  
   PrintSpeeds();
 }
 
@@ -212,6 +216,8 @@ void loop()
   Print("Unlatching...");
   servoLatch.writeMicroseconds(SERVO_LATCH_UNLATCHED);
   Print("Unlatched");
+
+  //startTimer();
 
   double wall_dist = GetUltrasonicVal();
   Print("wall_dist: ");
