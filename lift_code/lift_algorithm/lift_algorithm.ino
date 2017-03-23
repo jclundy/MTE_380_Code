@@ -17,16 +17,19 @@ int right_switch = 0;
 bool leftmotorON = false;
 bool rightmotorON = false;
 
-int motor_differential_slow = 100;
-int motor_differential_fast = 500;
-
 int SERVO_LEFT_GO_ms = 2000;
 int SERVO_RIGHT_GO_ms = 1000;
 
-int SERVO_LEFT_SLOW_ms = 1800;
-int SERVO_RIGHT_SLOW_ms = 1200;
+int SERVO_LEFT_REVERSE_ms = 2000;
+int SERVO_RIGHT_REVERSE_ms = 1000;
 
-double trim = 0.51;
+int SERVO_LEFT_SLOW_FORWARD_ms = 1800;
+int SERVO_RIGHT_SLOW_FORWARD_ms = 1200;
+
+int SERVO_LEFT_SLOW_REVERSE_ms = 1200;
+int SERVO_RIGHT_SLOW_REVERSE_ms = 1800;
+
+double trim = 0.5;
 
 void TestDrivingTrim() {
   int incomingInt = 0;
@@ -59,15 +62,26 @@ void TestDrivingTrim() {
       SERVO_LEFT_GO_ms = SERVO_LEFT_STOP_ms + (1000.0*trim);
       SERVO_RIGHT_GO_ms = SERVO_RIGHT_STOP_ms - (1000.0*(1-trim));
 
-      Serial.print("Left servo: ");
+      SERVO_LEFT_SLOW_FORWARD_ms = SERVO_LEFT_STOP_ms + (200.0*trim);
+      SERVO_RIGHT_SLOW_FORWARD_ms = SERVO_RIGHT_STOP_ms - (200.0*(1-trim));
+
+      SERVO_LEFT_SLOW_REVERSE_ms = SERVO_RIGHT_SLOW_FORWARD_ms;
+      SERVO_RIGHT_SLOW_REVERSE_ms = SERVO_LEFT_SLOW_FORWARD_ms;
+
+      Serial.print("Left servo go: ");
       Serial.println(SERVO_LEFT_GO_ms);
-      Serial.print("Right servo: ");
+      Serial.print("Right servo go: ");
       Serial.println(SERVO_RIGHT_GO_ms);
 
-      servoLeft.writeMicroseconds(SERVO_LEFT_GO_ms);
-      servoRight.writeMicroseconds(SERVO_RIGHT_GO_ms);
+      Serial.print("Left servo slow: ");
+      Serial.println(SERVO_LEFT_SLOW_FORWARD_ms);
+      Serial.print("Right servo slow: ");
+      Serial.println(SERVO_RIGHT_SLOW_FORWARD_ms);
+
+      servoLeft.writeMicroseconds(SERVO_LEFT_SLOW_FORWARD_ms);
+      servoRight.writeMicroseconds(SERVO_RIGHT_SLOW_FORWARD_ms);
     
-      delay(3000);
+      delay(2000);
 
       servoLeft.writeMicroseconds(SERVO_LEFT_STOP_ms);
       servoRight.writeMicroseconds(SERVO_RIGHT_STOP_ms);
@@ -170,6 +184,24 @@ void Reset()
   servoLatch.writeMicroseconds(SERVO_LATCH_LATCHED);
 }
 
+void PrintSpeeds()
+{
+  Serial.print("Left servo go: ");
+      Serial.println(SERVO_LEFT_GO_ms);
+      Serial.print("Right servo go: ");
+      Serial.println(SERVO_RIGHT_GO_ms);
+
+      Serial.print("Left servo reverse: ");
+      Serial.println(SERVO_LEFT_REVERSE_ms);
+      Serial.print("Right servo reverse: ");
+      Serial.println(SERVO_RIGHT_REVERSE_ms);
+
+      Serial.print("Left servo slow: ");
+      Serial.println(SERVO_LEFT_SLOW_FORWARD_ms);
+      Serial.print("Right servo slow: ");
+      Serial.println(SERVO_RIGHT_SLOW_FORWARD_ms);
+}
+
 void setup() {
   
   // pin assignment for servos
@@ -196,11 +228,24 @@ void setup() {
 
   // AdjustRelativeMotorSpeed();
   TestDrivingTrim();
+
+  SERVO_LEFT_GO_ms = SERVO_LEFT_STOP_ms + (1000.0*trim);
+  SERVO_RIGHT_GO_ms = SERVO_RIGHT_STOP_ms - (1000.0*(1-trim));
+
+  SERVO_LEFT_SLOW_FORWARD_ms = SERVO_LEFT_STOP_ms + (200.0*trim);
+  SERVO_RIGHT_SLOW_FORWARD_ms = SERVO_RIGHT_STOP_ms - (200.0*(1-trim));
+
+  SERVO_LEFT_SLOW_REVERSE_ms = SERVO_RIGHT_SLOW_FORWARD_ms;
+  SERVO_RIGHT_SLOW_REVERSE_ms = SERVO_LEFT_SLOW_FORWARD_ms;
+
+  SERVO_LEFT_REVERSE_ms = SERVO_RIGHT_GO_ms;
+  SERVO_RIGHT_REVERSE_ms = SERVO_LEFT_GO_ms;
+  
+  PrintSpeeds();
 }
 
 void loop() 
 {
-  Print("in loop()");
   Reset();
   
   // Start Signal: use both limit switches 
@@ -216,27 +261,42 @@ void loop()
   Print("wall_dist: ");
   Print(wall_dist);
 
-  Print("Entering main loop");
-  
+  Print("Entering full speed loop.");
+
+  // Go full speed until 20 cm out
+  while(wall_dist > 25)
+  {
+    wall_dist = GetUltrasonicVal();
+    Print("Wall_dist: ");
+    Print(wall_dist);
+    
+    // drive straight 
+    servoLeft.writeMicroseconds(SERVO_LEFT_GO_ms);
+    servoRight.writeMicroseconds(SERVO_RIGHT_GO_ms);
+
+    delay(50);
+  }
+
+  Print("-------------Slowing---------------");
   // While switches not pressed
   while (!digitalRead(SWITCH_RIGHT_PIN) || !digitalRead(SWITCH_LEFT_PIN)){
 
     // If neither pressed
     if (!digitalRead(SWITCH_RIGHT_PIN) && (!digitalRead(SWITCH_LEFT_PIN)))
     {
-      servoLeft.writeMicroseconds(SERVO_LEFT_GO_ms);
-      servoRight.writeMicroseconds(SERVO_RIGHT_GO_ms);
+      servoLeft.writeMicroseconds(SERVO_LEFT_SLOW_FORWARD_ms);
+      servoRight.writeMicroseconds(SERVO_RIGHT_SLOW_FORWARD_ms);
     }
     // If right pressed
     else if (digitalRead(SWITCH_RIGHT_PIN))
     {
       servoLeft.writeMicroseconds(SERVO_LEFT_GO_ms);
-      servoRight.writeMicroseconds(SERVO_RIGHT_STOP_ms);
+      servoRight.writeMicroseconds(SERVO_RIGHT_REVERSE_ms);
     }
     // Left pressed
     else
     {
-      servoLeft.writeMicroseconds(SERVO_LEFT_STOP_ms);
+      servoLeft.writeMicroseconds(SERVO_LEFT_REVERSE_ms);
       servoRight.writeMicroseconds(SERVO_RIGHT_GO_ms);
     }
   }
@@ -260,7 +320,7 @@ void loop()
   
   Print("Waiting for height switch to be unpressed...");
   while (digitalRead(SWITCH_HEIGHT_PIN));
-  Print("Height switch unpressed. Resetting lift");
+  Print("Height switch unpressed.");
   
   delay(10);
 }
