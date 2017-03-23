@@ -182,6 +182,8 @@ void Reset()
   servoRight.writeMicroseconds(SERVO_RIGHT_STOP_ms);
   servoBridge.writeMicroseconds(SERVO_BRIDGE_UP);
   servoLatch.writeMicroseconds(SERVO_LATCH_LATCHED);
+
+  digitalWrite(COMMUNICATION_PIN,HIGH);
 }
 
 void PrintSpeeds()
@@ -215,6 +217,8 @@ void setup() {
   servoRight.writeMicroseconds(SERVO_RIGHT_STOP_ms);
   servoLatch.writeMicroseconds(SERVO_LATCH_LATCHED);
   servoBridge.writeMicroseconds(SERVO_BRIDGE_UP);
+
+  digitalWrite(COMMUNICATION_PIN,HIGH);
 
   pinMode(PUSH_BUTTON_PIN, INPUT);
   pinMode(SWITCH_LEFT_PIN, INPUT);
@@ -291,12 +295,12 @@ void loop()
     else if (digitalRead(SWITCH_RIGHT_PIN))
     {
       servoLeft.writeMicroseconds(SERVO_LEFT_GO_ms);
-      servoRight.writeMicroseconds(SERVO_RIGHT_REVERSE_ms);
+      servoRight.writeMicroseconds(SERVO_RIGHT_SLOW_REVERSE_ms);
     }
     // Left pressed
     else
     {
-      servoLeft.writeMicroseconds(SERVO_LEFT_REVERSE_ms);
+      servoLeft.writeMicroseconds(SERVO_LEFT_SLOW_REVERSE_ms);
       servoRight.writeMicroseconds(SERVO_RIGHT_GO_ms);
     }
   }
@@ -313,7 +317,7 @@ void loop()
   delay(1000);
   
   Print("Writing to communication pin...");
-  digitalWrite(COMMUNICATION_PIN,HIGH);
+  digitalWrite(COMMUNICATION_PIN,LOW);
 
   Print("Latch servo back to latched position...");
   servoLatch.writeMicroseconds(SERVO_LATCH_LATCHED);
