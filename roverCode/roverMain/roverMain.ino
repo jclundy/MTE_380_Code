@@ -19,8 +19,9 @@ spool* spooler;
 unsigned long timerValue = 0;
 
 void setup() {
-
+#ifdef DEBUG
   Serial.begin(9600);
+#endif
 
   //Servo pointers
   Servo* servoFL_p = new Servo();
@@ -33,6 +34,7 @@ void setup() {
   pinMode(FRONT_RIGHT_MOTOR_PIN,OUTPUT);
   pinMode(BACK_LEFT_MOTOR_PIN,OUTPUT);
   pinMode(BACK_RIGHT_MOTOR_PIN,OUTPUT);
+  pinMode(GO_AHEAD_PIN, INPUT);
 
   servoFL_p->attach(FRONT_LEFT_MOTOR_PIN);
   servoFR_p->attach(FRONT_RIGHT_MOTOR_PIN);
@@ -84,21 +86,22 @@ void loweringLoop(){
 #ifdef DEBUG
   Serial.println("state: WAITING_FOR_LIFT_COM");
 #endif
-  startTimer();
+  //startTimer();
   //rover is waiting for communications line to go low
-  while (readTimer() < WAITING_FOR_LIFT_COM_MAX_WINDOW)
-  {
-    if(readTimer() > WAITING_FOR_LIFT_COM_MIN_WINDOW && digitalRead(GO_AHEAD_PIN)) {
-      break;
-    }
-  }
-  delay(WAITING_FOR_LIFT_COM_MIN_WINDOW);
+//  while (readTimer() < WAITING_FOR_LIFT_COM_MAX_WINDOW)
+//  {
+//    if(readTimer() > WAITING_FOR_LIFT_COM_MIN_WINDOW && digitalRead(GO_AHEAD_PIN)) {
+//      break;
+//    }
+//  }
+  //while (!digitalRead(GO_AHEAD_PIN))
+  //delay(WAITING_FOR_LIFT_COM_MIN_WINDOW);
   
 #ifdef DEBUG
   Serial.println("state: DRIVING_FORWARD");
 #endif
   startTimer();
-  spooler->unspool();
+  spooler->unspoolSlow();
   rover->wheelDriver->driveForwards(MOTOR_POWER_LOWERING);
   while (readTimer() < DRIVING_FORWARD_MAX_WINDOW)
   {
@@ -176,7 +179,7 @@ void loop() {
 
   //testingAlgorithms::waitForUltrasonicInputToStart(rover);
   
-  testingAlgorithms::waitForInputToStart();
+  //testingAlgorithms::waitForInputToStart();
   loweringLoop();
 //  // take in rope
 //  spooler->takeInSlow();

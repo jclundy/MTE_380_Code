@@ -22,7 +22,11 @@ void spool::stopRotating() {
 
 // unspools at moderate speed
 void spool::unspool() {
-	motor->writeMicroseconds(UNSPOOL_SLOW_uS);
+	motor->writeMicroseconds(UNSPOOL_FAST_us);
+}
+
+void spool::unspoolSlow() {
+  motor->writeMicroseconds(UNSPOOL_SLOW_uS);
 }
 
 // reverses with enough torque to hold itself from falling

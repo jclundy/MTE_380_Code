@@ -49,6 +49,8 @@ public:
 	// unspools at moderate speed
 	void unspool();
 
+        void unspoolSlow(); 
+
 	// reverses with enough torque to hold itself from falling
 	void takeInFast();
 
