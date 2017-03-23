@@ -53,13 +53,12 @@ void setup() {
   pinMode(WALL_DIRECTION_PIN,INPUT);
   int wallDirectionReadValue = digitalRead(WALL_DIRECTION_PIN);
   if (wallDirectionReadValue == HIGH) {
+    //left
     rover->blipper->setWallSide(1);
   } else {
+    //right
     rover->blipper->setWallSide(2);
   }
-
-
-  rover->blipper->setWallSide(2);
 
   #ifdef DEBUG
     Serial.println("Initalized");
@@ -74,7 +73,7 @@ void loweringLoop(){
 #endif
   while (!digitalRead(GO_AHEAD_PIN))
   {
-    if (digitalRead(SPOOL_UP_BUTTON_PIN))
+    if (!digitalRead(SPOOL_UP_BUTTON_PIN))
      {
        spooler->takeInSlow();
      }
@@ -164,5 +163,6 @@ unsigned long readTimer(){
 void loop() {
   //rover->blipper->setWallSide(1);
   loweringLoop();
+  delay(2000);
   rover->driveToPole();
 }
