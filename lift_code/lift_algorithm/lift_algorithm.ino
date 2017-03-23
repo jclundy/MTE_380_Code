@@ -26,14 +26,65 @@ int SERVO_RIGHT_GO_ms = 1000;
 int SERVO_LEFT_SLOW_ms = 1800;
 int SERVO_RIGHT_SLOW_ms = 1200;
 
-void AdjustRelativeMotorSpeed()
-{
-  int trim = 0;
-  int temp = 0;
-  int maxTrim = 500;
+double trim = 0.51;
 
+void TestDrivingTrim() {
+  int incomingInt = 0;
+  double incomingValue = 0;
+  
+  Serial.println("Input driving trim");
+  
+  while((!digitalRead(SWITCH_LEFT_PIN)) || (!digitalRead(SWITCH_RIGHT_PIN))){
+  
+  Print("Waiting for integer input 0-100...");
+  
+  while (Serial.available() <= 0)
+  {
+    if(digitalRead(SWITCH_LEFT_PIN) && digitalRead(SWITCH_RIGHT_PIN))
+    {
+      return;
+    }
+  }
+  
+  if (Serial.available() > 0) {
+      incomingInt = Serial.parseInt();
+      Serial.print("Incoming integer: ");
+      Serial.println(incomingInt);
+      incomingValue = incomingInt / 100.0;
+      Serial.print("Double Value/Trim: ");
+      Serial.println(incomingValue);
+
+      trim = incomingValue;
+
+      SERVO_LEFT_GO_ms = SERVO_LEFT_STOP_ms + (1000.0*trim);
+      SERVO_RIGHT_GO_ms = SERVO_RIGHT_STOP_ms - (1000.0*(1-trim));
+
+      Serial.print("Left servo: ");
+      Serial.println(SERVO_LEFT_GO_ms);
+      Serial.print("Right servo: ");
+      Serial.println(SERVO_RIGHT_GO_ms);
+
+      servoLeft.writeMicroseconds(SERVO_LEFT_GO_ms);
+      servoRight.writeMicroseconds(SERVO_RIGHT_GO_ms);
+    
+      delay(3000);
+
+      servoLeft.writeMicroseconds(SERVO_LEFT_STOP_ms);
+      servoRight.writeMicroseconds(SERVO_RIGHT_STOP_ms);
+
+    }
+  }
+  Serial.println("Exiting trim function");
+}
+
+/*void AdjustRelativeMotorSpeed()
+{
+  while((!digitalRead(SWITCH_LEFT_PIN)) || (!digitalRead(SWITCH_RIGHT_PIN)));  
+  while((digitalRead(SWITCH_LEFT_PIN)) || (digitalRead(SWITCH_RIGHT_PIN)));
   while((!digitalRead(SWITCH_LEFT_PIN)) || (!digitalRead(SWITCH_RIGHT_PIN)))
   {
+    Print("In speed control Loop");
+    
     potVal = analogRead(POT_PIN);
   
     Serial.write("PotVal: ");
@@ -43,8 +94,8 @@ void AdjustRelativeMotorSpeed()
     // at 511, left MS == right MS
     trim = potVal /1023.0;
     
-    SERVO_LEFT_GO_ms = SERVO_LEFT_STOP_ms + (900*trim);
-    SERVO_RIGHT_GO_ms = SERVO_RIGHT_STOP_ms - (900*(1-trim));
+    SERVO_LEFT_GO_ms = SERVO_LEFT_STOP_ms + (200.0*(1+trim));
+    SERVO_RIGHT_GO_ms = SERVO_RIGHT_STOP_ms - (200.0*(1-trim));
     
     Serial.write("trim: ");
     Serial.println(trim);
@@ -53,13 +104,13 @@ void AdjustRelativeMotorSpeed()
     Serial.write("right: ");
     Serial.println(SERVO_RIGHT_GO_ms);
     
-    //servoLeft.writeMicroseconds(SERVO_LEFT_GO_ms);
-    //servoRight.writeMicroseconds(SERVO_RIGHT_GO_ms);
+    servoLeft.writeMicroseconds(SERVO_LEFT_GO_ms);
+    servoRight.writeMicroseconds(SERVO_RIGHT_GO_ms);
   
     delay(100);
   }
-  
-}
+  Print("out of loop");
+}*/
 
 double GetUltrasonicVal() {
   unsigned long t1;
@@ -110,6 +161,15 @@ inline void Print(double val){
   Serial.println(val);
 }
 
+void Reset()
+{
+  Print("Resetting");
+  servoLeft.writeMicroseconds(SERVO_LEFT_STOP_ms);
+  servoRight.writeMicroseconds(SERVO_RIGHT_STOP_ms);
+  servoBridge.writeMicroseconds(SERVO_BRIDGE_UP);
+  servoLatch.writeMicroseconds(SERVO_LATCH_LATCHED);
+}
+
 void setup() {
   
   // pin assignment for servos
@@ -134,21 +194,29 @@ void setup() {
   
   Serial.begin(9600);
 
-  AdjustRelativeMotorSpeed();
+  // AdjustRelativeMotorSpeed();
+  TestDrivingTrim();
 }
 
 void loop() 
 {
+  Print("in loop()");
+  Reset();
+  
   // Start Signal: use both limit switches 
   Print("Waiting for start..."); 
   while((!digitalRead(SWITCH_LEFT_PIN)) || (!digitalRead(SWITCH_RIGHT_PIN)));
   while((digitalRead(SWITCH_LEFT_PIN)) || (digitalRead(SWITCH_RIGHT_PIN)));
 
+  Print("Unlatching...");
   servoLatch.writeMicroseconds(SERVO_LATCH_UNLATCHED);
+  Print("Unlatched");
 
   double wall_dist = GetUltrasonicVal();
   Print("wall_dist: ");
   Print(wall_dist);
+
+  Print("Entering main loop");
   
   // While switches not pressed
   while (!digitalRead(SWITCH_RIGHT_PIN) || !digitalRead(SWITCH_LEFT_PIN)){
@@ -175,8 +243,24 @@ void loop()
   servoLeft.writeMicroseconds(SERVO_LEFT_STOP_ms);
   servoRight.writeMicroseconds(SERVO_RIGHT_STOP_ms);
 
+  Print("Waiting for height switch...");
   while (!digitalRead(SWITCH_HEIGHT_PIN));
+  Print("Height switch pressed. Lowering Bridge...");
+
+  servoBridge.writeMicroseconds(SERVO_BRIDGE_DOWN);
+  Print("Bridge Lowered");
   
-  Serial.println("Reached");
+  delay(1000);
+  
+  Print("Writing to communication pin...");
+  digitalWrite(COMMUNICATION_PIN,HIGH);
+
+  Print("Latch servo back to latched position...");
+  servoLatch.writeMicroseconds(SERVO_LATCH_LATCHED);
+  
+  Print("Waiting for height switch to be unpressed...");
+  while (digitalRead(SWITCH_HEIGHT_PIN));
+  Print("Height switch unpressed. Resetting lift");
+  
   delay(10);
 }
