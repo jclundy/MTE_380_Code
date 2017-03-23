@@ -183,7 +183,7 @@ void Reset()
   servoBridge.writeMicroseconds(SERVO_BRIDGE_UP);
   servoLatch.writeMicroseconds(SERVO_LATCH_LATCHED);
 
-  digitalWrite(COMMUNICATION_PIN,HIGH);
+  digitalWrite(COMMUNICATION_PIN,LOW);
 }
 
 void PrintSpeeds()
@@ -218,7 +218,7 @@ void setup() {
   servoLatch.writeMicroseconds(SERVO_LATCH_LATCHED);
   servoBridge.writeMicroseconds(SERVO_BRIDGE_UP);
 
-  digitalWrite(COMMUNICATION_PIN,HIGH);
+  digitalWrite(COMMUNICATION_PIN,LOW);
 
   pinMode(PUSH_BUTTON_PIN, INPUT);
   pinMode(SWITCH_LEFT_PIN, INPUT);
@@ -314,10 +314,10 @@ void loop()
   servoBridge.writeMicroseconds(SERVO_BRIDGE_DOWN);
   Print("Bridge Lowered");
   
-  delay(1000);
+  // delay(1000);
   
   Print("Writing to communication pin...");
-  digitalWrite(COMMUNICATION_PIN,LOW);
+  digitalWrite(COMMUNICATION_PIN,HIGH);
 
   Print("Latch servo back to latched position...");
   servoLatch.writeMicroseconds(SERVO_LATCH_LATCHED);
@@ -325,6 +325,9 @@ void loop()
   Print("Waiting for height switch to be unpressed...");
   while (digitalRead(SWITCH_HEIGHT_PIN));
   Print("Height switch unpressed.");
+
+  while((!digitalRead(SWITCH_LEFT_PIN)) || (!digitalRead(SWITCH_RIGHT_PIN)));
+  while((digitalRead(SWITCH_LEFT_PIN)) || (digitalRead(SWITCH_RIGHT_PIN)));
   
   delay(10);
 }
