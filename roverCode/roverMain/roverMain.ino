@@ -45,7 +45,7 @@ void setup() {
   }
   */
 
-  rover->blipper->setWallSide(1);
+  rover->blipper->setWallSide(2);
 
   #ifdef DEBUG
     Serial.println("Initalized");
@@ -58,6 +58,7 @@ void loop() {
 
 
   testingAlgorithms* mainTest = new testingAlgorithms();
+  
   //mainTest->frontLeftServoTestMicroseconds(rover->wheelDriver);
   //mainTest->testDrivingTrim(rover->wheelDriver);
   //mainTest->testDrivePower(rover->wheelDriver);
@@ -69,16 +70,14 @@ void loop() {
   //mainTest->testDriveToPole(blipper, wheelDriver);
   //mainTest->testBlipperFindPolePosition(rover);
   //mainTest->testLocatePoleHeadOn(rover);
-  
+
 
   //testingAlgorithms::waitForUltrasonicInputToStart(rover);
   
   testingAlgorithms::waitForInputToStart();
-  delay(3000);
   rover->driveToPole();
   
   //rover->blipper->setWallSide(1);
-  //rover->driveByPole();
 
   //Serial.println(rover->blipper->getFrontUltrasonicRead(),1);
   //rover->blipper->lastKnownPolePosition = 67;
