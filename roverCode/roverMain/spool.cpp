@@ -1,12 +1,5 @@
 #include "spool.h"
 
-//#define RESTING_uS 1525
-//#define UNSPOOL_SLOW_uS 1550;
-//#define UNSPOOL_FAST_us 1575;
-//#define TAKE_IN_FAST_uS 1400
-//#define TAKE_IN_SLOW_uS 1500
-
-
 spool::spool(Servo* servo) {
 	motor = servo;
 }
@@ -16,7 +9,7 @@ spool::~spool() {
 }
 
 // sends signal to servo to stop rotation
-void spool::stopRotating() {
+void spool::stopRotating() {  
 	motor->writeMicroseconds(RESTING_uS);
 }
 
@@ -37,4 +30,20 @@ void spool::takeInFast() {
 // reverses at slow speed for loading the rope
 void spool::takeInSlow() {
 	motor->writeMicroseconds(TAKE_IN_SLOW_uS);
+}
+
+void spool::unspoolAtPower(int percentage) {
+  
+  if(percentage < 0)
+  {
+    return;
+  }
+  else if(percentage > 100)
+  {
+    return;
+  }
+  
+  int range = UNSPOOL_MAX_us - RESTING_uS;
+  int microseconds = range * percentage / 100.0 + RESTING_uS;
+  motor->writeMicroseconds(microseconds);
 }

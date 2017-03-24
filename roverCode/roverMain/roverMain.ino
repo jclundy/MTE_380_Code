@@ -12,9 +12,8 @@
 #define GO_AHEAD_PIN A3
 
 #define SPOOL_PIN 6
-#define MOTOR_POWER_LOWERING 25
-
-
+#define MOTOR_POWER_LOWERING 90
+#define MOTOR_POWER_TOUCHDOWN 90
 roverBrain* rover;
 spool* spooler;
 
@@ -51,14 +50,6 @@ void setup() {
 
   //Set wall direction
   pinMode(WALL_DIRECTION_PIN,INPUT);
-  int wallDirectionReadValue = digitalRead(WALL_DIRECTION_PIN);
-  if (wallDirectionReadValue == HIGH) {
-    //left
-    rover->blipper->setWallSide(1);
-  } else {
-    //right
-    rover->blipper->setWallSide(2);
-  }
 
   #ifdef DEBUG
     Serial.println("Initalized");
@@ -124,15 +115,25 @@ void loweringLoop(){
   }
 
 #ifdef DEBUG
-  Serial.println("state: VERTICAL_LOWERING");
+  Serial.println("state: VERTICAL_LOWERING FAST");
 #endif
   startTimer();
-  spooler->unspool();
+  spooler->unspoolAtPower(90);
   rover->wheelDriver->driveForwards(MOTOR_POWER_LOWERING);
-  while (readTimer() < VERTICAL_LOWERING_MAX_WINDOW)
+  while (readTimer() < VERTICAL_LOWERING_FAST_WINDOW)
   {
 #ifdef DEBUG
     Serial.println("VERTICAL_LOWERING!!!!!");
+#endif
+  }
+  
+  startTimer();
+  spooler->unspoolAtPower(75);
+  rover->wheelDriver->driveForwards(MOTOR_POWER_LOWERING);
+  while (readTimer() < VERTICAL_LOWERING_SLOW_WINDOW)
+  {
+#ifdef DEBUG
+    Serial.println("VERTICAL_LOWERING!!!!! SLOW");
 #endif
   }
 
@@ -140,8 +141,8 @@ void loweringLoop(){
   Serial.println("state: TOUCHING_DOWN");
 #endif
   startTimer();
-  spooler->unspool();
-  rover->wheelDriver->driveForwards(MOTOR_POWER_LOWERING);
+  spooler->unspoolAtPower(75);
+  rover->wheelDriver->driveForwards(MOTOR_POWER_TOUCHDOWN);
   while (readTimer() < TOUCHING_DOWN_MAX_WINDOW)
   {
 #ifdef DEBUG
@@ -161,8 +162,20 @@ unsigned long readTimer(){
 }
 
 void loop() {
-  //rover->blipper->setWallSide(1);
+  
   loweringLoop();
-  delay(2000);
+  delay(10);
+  
+  testingAlgorithms::waitForInputToStart();
+  
+  int wallDirectionReadValue = digitalRead(WALL_DIRECTION_PIN);
+  if (wallDirectionReadValue == HIGH) {
+    //left
+    rover->blipper->setWallSide(1);
+  } else {
+    //right
+    rover->blipper->setWallSide(2);
+  }
+  delay(450);
   rover->driveToPole();
 }
