@@ -34,8 +34,10 @@
 #define RESTING_uS 1525
 #define UNSPOOL_SLOW_uS 1550
 #define UNSPOOL_FAST_us 1555
+#define UNSPOOL_MAX_us 1700
 #define TAKE_IN_FAST_uS 1400
 #define TAKE_IN_SLOW_uS 1500
+#define MOTOR_POWER_LOWERING 50
 
 // drive motor power values
 class spool {
@@ -56,6 +58,10 @@ public:
 
 	// reverses at slow speed for loading the rope
 	void takeInSlow();
+
+        // takes in a percentage between max speed and lowest speed
+        void unspoolAtPower(int percentage);
+
 
 private:
 	Servo* motor;

@@ -12,8 +12,6 @@
 #define GO_AHEAD_PIN A3
 
 #define SPOOL_PIN 6
-#define MOTOR_POWER_LOWERING 25
-
 
 roverBrain* rover;
 spool* spooler;
