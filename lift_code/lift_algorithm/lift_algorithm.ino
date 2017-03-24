@@ -281,12 +281,15 @@ void loop()
   Print("Latch servo back to latched position...");
   servoLatch.writeMicroseconds(SERVO_LATCH_LATCHED);
   
-  Print("Waiting for height switch to be unpressed...");
+  /*Print("Waiting for height switch to be unpressed...");
   while (digitalRead(SWITCH_HEIGHT_PIN));
-  Print("Height switch unpressed.");
+  Print("Height switch unpressed.");*/
 
-  while((!digitalRead(SWITCH_LEFT_PIN)) || (!digitalRead(SWITCH_RIGHT_PIN)));
-  while((digitalRead(SWITCH_LEFT_PIN)) || (digitalRead(SWITCH_RIGHT_PIN)));
+  /*while((!digitalRead(SWITCH_LEFT_PIN)) || (!digitalRead(SWITCH_RIGHT_PIN)));
+  while((digitalRead(SWITCH_LEFT_PIN)) || (digitalRead(SWITCH_RIGHT_PIN)));*/
+
+  while(digitalRead(PUSH_BUTTON_PIN) == LOW);
+  while(digitalRead(PUSH_BUTTON_PIN) == HIGH);
   
   delay(10);
 }
