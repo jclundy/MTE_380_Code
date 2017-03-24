@@ -177,5 +177,6 @@ void loop() {
     rover->blipper->setWallSide(2);
   }
   delay(450);
+
   rover->driveToPole();
 }

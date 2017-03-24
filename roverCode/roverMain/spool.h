@@ -29,10 +29,10 @@
 #define RESTING_uS 1525
 #define UNSPOOL_SLOW_uS 1550
 #define UNSPOOL_FAST_us 1555
+
 #define UNSPOOL_MAX_us 1600
 #define TAKE_IN_FAST_uS 1400
 #define TAKE_IN_SLOW_uS 1450
-
 
 // drive motor power values
 class spool {

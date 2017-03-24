@@ -10,7 +10,7 @@
 #include "blipperBrain.h"
 
 #define POLEDRIVEDELAYSLOPE 0
-#define POLEDRIVEDELAYB 0
+#define POLEDRIVEDELAYB 700
 
 
 

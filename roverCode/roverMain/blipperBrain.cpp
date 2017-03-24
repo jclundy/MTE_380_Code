@@ -151,7 +151,7 @@ int blipperBrain::waitToSeePoleDirection() {
     Serial.println(sideCeilingValue+40, 1);
   #endif
   
-  if (sideCeilingValue < 90) {
+  if (sideCeilingValue < 90 && wallDirection == 2) {
     sideCeilingValue = 90;
   }
 
@@ -167,7 +167,6 @@ int blipperBrain::waitToSeePoleDirection() {
     delay(25);
     currentSideReadingValue = getUltrasonicRead(side_trig_pin, side_echo_pin);
     currentFrontReadingValue = getUltrasonicRead(FRONT_TRIG_PIN,FRONT_ECHO_PIN);
-    Serial.println(currentSideReadingValue,1);
 
     if (currentSideReadingValue < sideCeilingValue) {
       if (abs(currentSideReadingValue - lastSideReadingValue) < tolerance) {
@@ -268,6 +267,7 @@ int blipperBrain::driveTowardsPole() {
   frontReadingValue = lastKnownPolePosition;
 
   while (searching) {
+    delay(20);
     frontReadingValue = getFrontUltrasonicRead();
     sideReadingValue = getUltrasonicRead(sideTrigPin,sideEchoPin);
     
