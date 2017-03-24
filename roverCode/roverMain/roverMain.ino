@@ -191,7 +191,7 @@ void setWallDirection() {
 void loop() {
   
   loweringLoop();
-  delay(500);
+  delay(200);
   rover->driveToPole();
   
   
@@ -200,6 +200,10 @@ void loop() {
   
   
    //TESTING ALGORITHM
+
+   //testingAlgorithms::waitForInputToStart();
+
+   //testingAlgorithms::testDrivingTrim(rover->wheelDriver);
    
    /*
   delay(3000);

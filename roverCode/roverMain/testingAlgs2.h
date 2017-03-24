@@ -36,7 +36,7 @@ class testingAlgorithms {
 
   //Waits for a serial input of 0 to 1000 and sets the trim to that value / 1000 (so 500 is 0.5) and then drives for 3 seconds at 90% power.
   //Use this to figure out what trim value your system needs to drive straight
-  void testDrivingTrim(drivingBrain* driver);
+  void static testDrivingTrim(drivingBrain* driver);
   
   //Waits for a serial input from 0 to inf and rotates at 90% power then delays for the inputted value, and then rotates back.
   //Use this to figure out what value of delay your system needs to turn 90 degrees
