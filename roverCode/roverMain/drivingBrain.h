@@ -23,7 +23,7 @@
 #define BACK_RIGHT_FULL_BACKWARDS_SPEED 2000
 
 //Once you know your 90 degree delay just put it here
-#define DEG_90_TURN_DELAY 1000 // 1800
+#define DEG_90_TURN_DELAY 1500 // 1800
 
 //Once you know your trim value just put it here
 #define INITIAL_TRIM_VALUE -0.2 // More positive is right

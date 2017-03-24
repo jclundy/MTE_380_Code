@@ -42,6 +42,7 @@ bool roverBrain::driveToPole() {
       Serial.println("FAIL - DRIVETOPOLE");
     #endif
     return false;
+    //Pole finding to make it more robust?
   }
   delay(100);
   roverResult = driveToPoleHeadOn();

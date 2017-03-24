@@ -13,6 +13,7 @@
 
 #define SPOOL_PIN 6
 #define MOTOR_POWER_LOWERING 25
+#define MOTOR_POWER_TOUCHDOWN 90
 
 
 roverBrain* rover;
@@ -141,7 +142,7 @@ void loweringLoop(){
 #endif
   startTimer();
   spooler->unspool();
-  rover->wheelDriver->driveForwards(MOTOR_POWER_LOWERING);
+  rover->wheelDriver->driveForwards(MOTOR_POWER_TOUCHDOWN);
   while (readTimer() < TOUCHING_DOWN_MAX_WINDOW)
   {
 #ifdef DEBUG
@@ -161,8 +162,8 @@ unsigned long readTimer(){
 }
 
 void loop() {
-  //rover->blipper->setWallSide(1);
+  
   loweringLoop();
-  delay(2000);
+  delay(500);
   rover->driveToPole();
 }
