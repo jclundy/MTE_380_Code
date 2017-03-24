@@ -59,10 +59,11 @@ void setup() {
 
 void loweringLoop(){
   int state = SPOOL_UP;
+  bool waitingForSignal = true;
 #ifdef DEBUG
   Serial.println("state: SPOOL_UP");
 #endif
-  while (!digitalRead(GO_AHEAD_PIN))
+  while (waitingForSignal)
   {
     if (!digitalRead(SPOOL_UP_BUTTON_PIN))
      {
@@ -72,7 +73,15 @@ void loweringLoop(){
      {
        spooler->stopRotating();
      }
+     if (!digitalRead(GO_AHEAD_PIN)) {
+      delay(10);
+      if (!digitalRead(GO_AHEAD_PIN)) {
+        waitingForSignal = false;
+      }
+     }
   }
+
+  setWallDirection();
   
 #ifdef DEBUG
   Serial.println("state: WAITING_FOR_LIFT_COM");
@@ -161,13 +170,8 @@ unsigned long readTimer(){
   return millis() - timerValue;
 }
 
-void loop() {
-  
-  loweringLoop();
-  delay(10);
-  
-  testingAlgorithms::waitForInputToStart();
-  
+void setWallDirection() {
+
   int wallDirectionReadValue = digitalRead(WALL_DIRECTION_PIN);
   if (wallDirectionReadValue == HIGH) {
     //left
@@ -176,7 +180,15 @@ void loop() {
     //right
     rover->blipper->setWallSide(2);
   }
-  delay(450);
+
+
+  
+}
+
+void loop() {
+  
+  loweringLoop();
+  delay(500);
 
   rover->driveToPole();
 }
