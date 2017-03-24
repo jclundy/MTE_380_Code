@@ -14,8 +14,6 @@
 #define SPOOL_PIN 6
 #define MOTOR_POWER_LOWERING 25
 #define MOTOR_POWER_TOUCHDOWN 90
-
-
 roverBrain* rover;
 spool* spooler;
 
