@@ -123,6 +123,21 @@ if (Serial.available() > 0) {
   }
 }
 
+void testingAlgorithms::getUltrasonicReadings(roverBrain* rover) {
+ 
+ rover->blipper->getAllUltrasonicRead();
+  
+  Serial.print("L: ");
+  Serial.print(rover->blipper->currentLeftReadingValue,1);
+  Serial.print("F: ");
+  Serial.print(rover->blipper->currentFrontReadingValue,1);
+  Serial.print("R: ");
+  Serial.println(rover->blipper->currentRightReadingValue,1); 
+  
+  delay(100);
+  
+}
+
 
 
 void testingAlgorithms::waitForInputToStart() {

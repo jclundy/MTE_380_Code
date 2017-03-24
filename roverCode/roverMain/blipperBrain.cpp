@@ -63,7 +63,7 @@ int blipperBrain::waitToSeePole() {
     rightCeilingValue = 80;
   }
 
-  #ifdef DEBUG
+  #ifdef DEBUG2
     Serial.print("Left wall distance: ");
     Serial.print(leftCeilingValue, 1);
     Serial.print(" Right wall distance: ");
@@ -84,7 +84,7 @@ int blipperBrain::waitToSeePole() {
         numLeftGoodReadings = 0;
       }
       if (numLeftGoodReadings >= windowLength) {
-        #ifdef DEBUG
+        #ifdef DEBUG2
           Serial.println("Found pole on left");
         #endif
         lastKnownPolePosition = currentLeftReadingValue;
@@ -100,7 +100,7 @@ int blipperBrain::waitToSeePole() {
         numRightGoodReadings = 0;
       }
       if (numRightGoodReadings >= windowLength) {
-        #ifdef DEBUG
+        #ifdef DEBUG2
           Serial.println("Found pole on right");
         #endif
         lastKnownPolePosition = currentRightReadingValue;
@@ -110,7 +110,7 @@ int blipperBrain::waitToSeePole() {
     }
 
     if (currentFrontReadingValue < 5) {
-      #ifdef DEBUG
+      #ifdef DEBUG2
         Serial.println("Hit wall on front");
       #endif
       lastKnownPolePosition = currentFrontReadingValue;
@@ -146,7 +146,7 @@ int blipperBrain::waitToSeePoleDirection() {
   delay(25);
   sideCeilingValue = getSideUltrasonicRead() - 40;
 
-  #ifdef DEBUG
+  #ifdef DEBUG2
     Serial.print("Side wall ceiling value initial: ");
     Serial.println(sideCeilingValue+40, 1);
   #endif
@@ -155,7 +155,7 @@ int blipperBrain::waitToSeePoleDirection() {
     sideCeilingValue = 90;
   }
 
-  #ifdef DEBUG
+  #ifdef DEBUG2
     Serial.print("Side wall ceiling value: ");
     Serial.println(sideCeilingValue, 1);
   #endif
@@ -175,7 +175,7 @@ int blipperBrain::waitToSeePoleDirection() {
         numSideGoodReadings = 0;
       }
       if (numSideGoodReadings >= windowLength) {
-        #ifdef DEBUG
+        #ifdef DEBUG2
           Serial.println("Found pole on side");
         #endif
         lastKnownPolePosition = currentSideReadingValue;
@@ -185,7 +185,7 @@ int blipperBrain::waitToSeePoleDirection() {
     }
     
     if (currentFrontReadingValue < 5) {
-      #ifdef DEBUG
+      #ifdef DEBUG2
         Serial.println("Hit wall on front");
       #endif
       lastKnownPolePosition = currentFrontReadingValue;
@@ -325,7 +325,7 @@ int blipperBrain::driveTowardsPole() {
 }
 
 void blipperBrain::setWallSide(int inWallSide) { 
-    #ifdef DEBUG
+    #ifdef DEBUG2
       Serial.print("Setting wall to: ");
       if (inWallSide == 1) {
         Serial.println("left");

@@ -30,6 +30,7 @@ class testingAlgorithms {
 
   void static rotateUntilSeePole(roverBrain* rover);
   
+  void static getUltrasonicReadings(roverBrain* rover);
 
 
 

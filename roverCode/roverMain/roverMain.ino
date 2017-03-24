@@ -20,7 +20,7 @@ spool* spooler;
 unsigned long timerValue = 0;
 
 void setup() {
-#ifdef DEBUG
+#ifdef DEBUG2
   Serial.begin(9600);
 #endif
 
@@ -73,9 +73,9 @@ void loweringLoop(){
      {
        spooler->stopRotating();
      }
-     if (!digitalRead(GO_AHEAD_PIN)) {
+     if (digitalRead(GO_AHEAD_PIN)) {
       delay(10);
-      if (!digitalRead(GO_AHEAD_PIN)) {
+      if (digitalRead(GO_AHEAD_PIN)) {
         waitingForSignal = false;
       }
      }
@@ -127,7 +127,8 @@ void loweringLoop(){
   Serial.println("state: VERTICAL_LOWERING FAST");
 #endif
   startTimer();
-  spooler->unspoolAtPower(90);
+  //spooler->unspoolAtPower(90);
+  spooler->unspool();
   rover->wheelDriver->driveForwards(MOTOR_POWER_LOWERING);
   while (readTimer() < VERTICAL_LOWERING_FAST_WINDOW)
   {
@@ -137,7 +138,8 @@ void loweringLoop(){
   }
   
   startTimer();
-  spooler->unspoolAtPower(75);
+  //spooler->unspoolAtPower(75);
+  spooler->unspool();
   rover->wheelDriver->driveForwards(MOTOR_POWER_LOWERING);
   while (readTimer() < VERTICAL_LOWERING_SLOW_WINDOW)
   {
@@ -150,7 +152,8 @@ void loweringLoop(){
   Serial.println("state: TOUCHING_DOWN");
 #endif
   startTimer();
-  spooler->unspoolAtPower(75);
+  //spooler->unspoolAtPower(75);
+  spooler->unspool();
   rover->wheelDriver->driveForwards(MOTOR_POWER_TOUCHDOWN);
   while (readTimer() < TOUCHING_DOWN_MAX_WINDOW)
   {
@@ -189,6 +192,23 @@ void loop() {
   
   loweringLoop();
   delay(500);
-
   rover->driveToPole();
+  
+  
+  
+  
+  
+  
+   //TESTING ALGORITHM
+   
+   /*
+  delay(3000);
+  testingAlgorithms::waitForUltrasonicInputToStart(rover);
+  
+  setWallDirection();
+  
+  //testingAlgorithms::waitForInputToStart();
+  rover->driveToPole();
+  
+  */
 }
