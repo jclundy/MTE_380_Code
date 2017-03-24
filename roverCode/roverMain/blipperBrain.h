@@ -13,7 +13,7 @@
 #define LOOKLEFT
 #define LOOKRIGHT
 
-#define DEBUG
+//#define DEBUG
 
 
 

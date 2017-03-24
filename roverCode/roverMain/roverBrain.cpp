@@ -124,6 +124,8 @@ bool roverBrain::rotateUntilSeePole(double tolerance, int rotateDirection, int t
   bool searching = true;
   bool result;
 
+  bool readingClose;
+
   int motorPower;
 
   if (rotateDirection > 0) {
@@ -132,8 +134,14 @@ bool roverBrain::rotateUntilSeePole(double tolerance, int rotateDirection, int t
     motorPower = -30;
   }
 
+  if (blipper->lastKnownPolePosition < closeReadingDistance) {
+    readingClose = true;
+  } else {
+    readingClose = false;
+  }
+
   #ifdef DEBUG
-    if (readingValue < (blipper->lastKnownPolePosition + tolerance)) {
+    if (blipper->lastKnownPolePosition < closeReadingDistance) {
       Serial.print("Starting to rotate to pole CLOSE @D:");
     } else {
       Serial.print("Starting to rotate to pole @D:");
@@ -162,12 +170,12 @@ bool roverBrain::rotateUntilSeePole(double tolerance, int rotateDirection, int t
     currentTime = millis();
     readingValue = blipper->getFrontUltrasonicRead();
 
-    if (readingValue < (blipper->lastKnownPolePosition + tolerance)) {
+    if (readingClose) {
         if (readingValue < (blipper->lastKnownPolePosition + tolerance)) {
-        numGoodReadings++;
-      } else {
-        numGoodReadings = 0;
-      }
+          numGoodReadings++;
+        } else {
+          numGoodReadings = 0;
+        }
     } else {
       if (abs(readingValue - blipper->lastKnownPolePosition) < tolerance) {
         numGoodReadings++;
@@ -175,9 +183,6 @@ bool roverBrain::rotateUntilSeePole(double tolerance, int rotateDirection, int t
         numGoodReadings = 0;
       }
     }
-    
-    
-
     
     if (numGoodReadings >= windowLength) {
 

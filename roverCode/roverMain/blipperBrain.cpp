@@ -177,7 +177,7 @@ int blipperBrain::waitToSeePoleDirection() {
       }
       if (numSideGoodReadings >= windowLength) {
         #ifdef DEBUG
-          Serial.println("Found pole on left");
+          Serial.println("Found pole on side");
         #endif
         lastKnownPolePosition = currentSideReadingValue;
         result = wallDirection;
