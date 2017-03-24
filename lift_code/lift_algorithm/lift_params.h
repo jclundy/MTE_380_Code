@@ -2,7 +2,7 @@
 const int SERVO_LATCH_LATCHED = 600;
 const int SERVO_LATCH_UNLATCHED = 2400;
 const int SERVO_BRIDGE_DOWN = 600;
-const int SERVO_BRIDGE_UP = 2400;
+const int SERVO_BRIDGE_UP = 2200;
 
 // Continuous servo stop values
 const int SERVO_LEFT_STOP=92;
@@ -38,3 +38,15 @@ const int LATCH_PIN = 9;
 const int BRIDGE_PIN = 6;
 
 const int POT_PIN = 2;
+
+int SERVO_LEFT_GO_ms = 2000;
+int SERVO_RIGHT_GO_ms = 1000;
+
+int SERVO_LEFT_REVERSE_ms = 2000;
+int SERVO_RIGHT_REVERSE_ms = 1000;
+
+int SERVO_LEFT_SLOW_FORWARD_ms = 1800;
+int SERVO_RIGHT_SLOW_FORWARD_ms = 1200;
+
+int SERVO_LEFT_SLOW_REVERSE_ms = 1200;
+int SERVO_RIGHT_SLOW_REVERSE_ms = 1800;

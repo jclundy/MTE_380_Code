@@ -1,6 +1,8 @@
 #include <Servo.h>
 #include "lift_params.h"
 
+#define DEBUG
+
 Servo servoLeft;
 Servo servoRight;
 Servo servoLatch;
@@ -17,19 +19,22 @@ int right_switch = 0;
 bool leftmotorON = false;
 bool rightmotorON = false;
 
-int SERVO_LEFT_GO_ms = 2000;
-int SERVO_RIGHT_GO_ms = 1000;
+double trim = 0.45;
 
-int SERVO_LEFT_REVERSE_ms = 2000;
-int SERVO_RIGHT_REVERSE_ms = 1000;
+void SetSpeeds()
+{
+  SERVO_LEFT_GO_ms = SERVO_LEFT_STOP_ms + (1000.0*trim);
+  SERVO_RIGHT_GO_ms = SERVO_RIGHT_STOP_ms - (1000.0*(1-trim));
 
-int SERVO_LEFT_SLOW_FORWARD_ms = 1800;
-int SERVO_RIGHT_SLOW_FORWARD_ms = 1200;
+  SERVO_LEFT_SLOW_FORWARD_ms = SERVO_LEFT_STOP_ms + (300.0*trim);
+  SERVO_RIGHT_SLOW_FORWARD_ms = SERVO_RIGHT_STOP_ms - (300.0*(1-trim));
 
-int SERVO_LEFT_SLOW_REVERSE_ms = 1200;
-int SERVO_RIGHT_SLOW_REVERSE_ms = 1800;
+  SERVO_LEFT_SLOW_REVERSE_ms = SERVO_RIGHT_SLOW_FORWARD_ms;
+  SERVO_RIGHT_SLOW_REVERSE_ms = SERVO_LEFT_SLOW_FORWARD_ms;
 
-double trim = 0.5;
+  SERVO_LEFT_REVERSE_ms = SERVO_RIGHT_GO_ms;
+  SERVO_RIGHT_REVERSE_ms = SERVO_LEFT_GO_ms;
+}
 
 void TestDrivingTrim() {
   int incomingInt = 0;
@@ -59,14 +64,7 @@ void TestDrivingTrim() {
 
       trim = incomingValue;
 
-      SERVO_LEFT_GO_ms = SERVO_LEFT_STOP_ms + (1000.0*trim);
-      SERVO_RIGHT_GO_ms = SERVO_RIGHT_STOP_ms - (1000.0*(1-trim));
-
-      SERVO_LEFT_SLOW_FORWARD_ms = SERVO_LEFT_STOP_ms + (200.0*trim);
-      SERVO_RIGHT_SLOW_FORWARD_ms = SERVO_RIGHT_STOP_ms - (200.0*(1-trim));
-
-      SERVO_LEFT_SLOW_REVERSE_ms = SERVO_RIGHT_SLOW_FORWARD_ms;
-      SERVO_RIGHT_SLOW_REVERSE_ms = SERVO_LEFT_SLOW_FORWARD_ms;
+      SetSpeeds();
 
       Serial.print("Left servo go: ");
       Serial.println(SERVO_LEFT_GO_ms);
@@ -78,10 +76,10 @@ void TestDrivingTrim() {
       Serial.print("Right servo slow: ");
       Serial.println(SERVO_RIGHT_SLOW_FORWARD_ms);
 
-      servoLeft.writeMicroseconds(SERVO_LEFT_SLOW_FORWARD_ms);
-      servoRight.writeMicroseconds(SERVO_RIGHT_SLOW_FORWARD_ms);
+      servoLeft.writeMicroseconds(SERVO_LEFT_GO_ms);
+      servoRight.writeMicroseconds(SERVO_RIGHT_GO_ms);
     
-      delay(2000);
+      delay(4000);
 
       servoLeft.writeMicroseconds(SERVO_LEFT_STOP_ms);
       servoRight.writeMicroseconds(SERVO_RIGHT_STOP_ms);
@@ -90,41 +88,6 @@ void TestDrivingTrim() {
   }
   Serial.println("Exiting trim function");
 }
-
-/*void AdjustRelativeMotorSpeed()
-{
-  while((!digitalRead(SWITCH_LEFT_PIN)) || (!digitalRead(SWITCH_RIGHT_PIN)));  
-  while((digitalRead(SWITCH_LEFT_PIN)) || (digitalRead(SWITCH_RIGHT_PIN)));
-  while((!digitalRead(SWITCH_LEFT_PIN)) || (!digitalRead(SWITCH_RIGHT_PIN)))
-  {
-    Print("In speed control Loop");
-    
-    potVal = analogRead(POT_PIN);
-  
-    Serial.write("PotVal: ");
-    Serial.println(potVal);
-
-    // potentiometer value controls relative speed of left vs right
-    // at 511, left MS == right MS
-    trim = potVal /1023.0;
-    
-    SERVO_LEFT_GO_ms = SERVO_LEFT_STOP_ms + (200.0*(1+trim));
-    SERVO_RIGHT_GO_ms = SERVO_RIGHT_STOP_ms - (200.0*(1-trim));
-    
-    Serial.write("trim: ");
-    Serial.println(trim);
-    Serial.write("left: ");
-    Serial.println(SERVO_LEFT_GO_ms);
-    Serial.write("right: ");
-    Serial.println(SERVO_RIGHT_GO_ms);
-    
-    servoLeft.writeMicroseconds(SERVO_LEFT_GO_ms);
-    servoRight.writeMicroseconds(SERVO_RIGHT_GO_ms);
-  
-    delay(100);
-  }
-  Print("out of loop");
-}*/
 
 double GetUltrasonicVal() {
   unsigned long t1;
@@ -164,15 +127,21 @@ double GetUltrasonicVal() {
 }
 
 inline void Print(String msg){
+  #ifdef DEBUG
   Serial.println(msg);
+  #endif
 }
 
 inline void Print(int val){
+  #ifdef DEBUG
   Serial.println(val);
+  #endif
 }
 
 inline void Print(double val){
+  #ifdef DEBUG
   Serial.println(val);
+  #endif
 }
 
 void Reset()
@@ -229,22 +198,9 @@ void setup() {
   pinMode(US_ECHO_PIN,INPUT);
   
   Serial.begin(9600);
-
-  // AdjustRelativeMotorSpeed();
-  TestDrivingTrim();
-
-  SERVO_LEFT_GO_ms = SERVO_LEFT_STOP_ms + (1000.0*trim);
-  SERVO_RIGHT_GO_ms = SERVO_RIGHT_STOP_ms - (1000.0*(1-trim));
-
-  SERVO_LEFT_SLOW_FORWARD_ms = SERVO_LEFT_STOP_ms + (200.0*trim);
-  SERVO_RIGHT_SLOW_FORWARD_ms = SERVO_RIGHT_STOP_ms - (200.0*(1-trim));
-
-  SERVO_LEFT_SLOW_REVERSE_ms = SERVO_RIGHT_SLOW_FORWARD_ms;
-  SERVO_RIGHT_SLOW_REVERSE_ms = SERVO_LEFT_SLOW_FORWARD_ms;
-
-  SERVO_LEFT_REVERSE_ms = SERVO_RIGHT_GO_ms;
-  SERVO_RIGHT_REVERSE_ms = SERVO_LEFT_GO_ms;
   
+  TestDrivingTrim();
+  SetSpeeds();  
   PrintSpeeds();
 }
 
@@ -261,6 +217,8 @@ void loop()
   servoLatch.writeMicroseconds(SERVO_LATCH_UNLATCHED);
   Print("Unlatched");
 
+  //startTimer();
+
   double wall_dist = GetUltrasonicVal();
   Print("wall_dist: ");
   Print(wall_dist);
@@ -268,7 +226,7 @@ void loop()
   Print("Entering full speed loop.");
 
   // Go full speed until 20 cm out
-  while(wall_dist > 25)
+  while((wall_dist > 25) && (!digitalRead(SWITCH_RIGHT_PIN)) && (!digitalRead(SWITCH_LEFT_PIN)))
   {
     wall_dist = GetUltrasonicVal();
     Print("Wall_dist: ");
@@ -278,10 +236,11 @@ void loop()
     servoLeft.writeMicroseconds(SERVO_LEFT_GO_ms);
     servoRight.writeMicroseconds(SERVO_RIGHT_GO_ms);
 
-    delay(50);
+    delay(40);
   }
 
   Print("-------------Slowing---------------");
+  
   // While switches not pressed
   while (!digitalRead(SWITCH_RIGHT_PIN) || !digitalRead(SWITCH_LEFT_PIN)){
 
@@ -322,12 +281,15 @@ void loop()
   Print("Latch servo back to latched position...");
   servoLatch.writeMicroseconds(SERVO_LATCH_LATCHED);
   
-  Print("Waiting for height switch to be unpressed...");
+  /*Print("Waiting for height switch to be unpressed...");
   while (digitalRead(SWITCH_HEIGHT_PIN));
-  Print("Height switch unpressed.");
+  Print("Height switch unpressed.");*/
 
-  while((!digitalRead(SWITCH_LEFT_PIN)) || (!digitalRead(SWITCH_RIGHT_PIN)));
-  while((digitalRead(SWITCH_LEFT_PIN)) || (digitalRead(SWITCH_RIGHT_PIN)));
+  /*while((!digitalRead(SWITCH_LEFT_PIN)) || (!digitalRead(SWITCH_RIGHT_PIN)));
+  while((digitalRead(SWITCH_LEFT_PIN)) || (digitalRead(SWITCH_RIGHT_PIN)));*/
+
+  while(digitalRead(PUSH_BUTTON_PIN) == LOW);
+  while(digitalRead(PUSH_BUTTON_PIN) == HIGH);
   
   delay(10);
 }
